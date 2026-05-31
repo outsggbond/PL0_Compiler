@@ -1,0 +1,38 @@
+文档要求的测试用例:
+输入：
+using namespace std;
+int main()
+{
+    int year = 2023;
+    cout << "hello" << endl;
+    return 0;
+}
+输出：
+using 单词
+namespace 单词
+std 单词
+; 符号
+int 单词
+main 单词
+( 符号
+) 符号
+{ 符号
+int 单词
+year 单词
+= 符号
+2023 数字
+; 符号
+cout 单词
+< 符号
+< 符号
+" 符号
+hello 单词
+" 符号
+< 符号
+< 符号
+endl 单词
+; 符号
+return 单词
+0 数字
+; 符号
+} 符号
