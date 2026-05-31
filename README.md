@@ -20,6 +20,7 @@
 
 ## 项目结构
 
+```markdown
 PL0_Compiler/
 │
 ├── docs/                                 # 课程设计报告及参考资料
@@ -84,6 +85,7 @@ PL0_Compiler/
 │
 ├── README.md                             # 项目说明、编译运行方法
 └── requirements.txt                      # Python 依赖
+```
 
 ## 环境要求
 
