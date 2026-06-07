@@ -1,0 +1,23 @@
+const 2a = 123456789;
+var   b, c;
+
+//单行注释
+
+/*
+* 多行注释
+*/
+
+procedure function1;
+    if 2a <= 10 then
+        begin
+            c := b + a;
+        end;
+begin
+    read(b);
+    while b @ 0 do
+        begin
+            call function1;
+            write(2 * c);
+            read(b);
+        end
+end.

@@ -95,19 +95,19 @@ PL0_Compiler/
 │       ├── lr_state_graph.py            # 第5章 LR 项目集自动机 + 活前缀路径
 │       └── quad_visualizer.py           # 第6章 控制流图 + 四元式执行过程 + 临时变量分析
 │
-├── input/ # 测试用例输入
-│   ├── correct/ # 正确语法用例
-│   │   ├── test1.txt
-│   │   └── test2.txt
-│   └── error/ # 错误用例
-│       ├── lexical_error.txt
-│       ├── syntax_error.txt
-│       └── semantic_error.txt
+├── input/ # 测试用例输入（分为两类）
+│   ├── correct/ # 正确输入 → 编译器产生正确的输出
+│   │   ├── test_1_lexer.txt     # 词法分析正确用例
+│   │   └── test_2_lexer.txt     # 语法/语义分析正确用例
+│   └── error/ # 带有错误的输入 → 编译器给出错误提示
+│       ├── lexical_error.txt    # 词法错误（非法字符等）
+│       ├── syntax_error.txt     # 语法错误（缺少分号、括号不匹配等）
+│       └── semantic_error.txt   # 语义错误（未声明变量、类型不匹配等）
 │
-├── output/ # 编译或运行输出
-│   ├── tokens_out.txt
-│   ├── quads_ll.txt
-│   └── quads_lr.txt
+├── output/ # 编译器输出（词法分析结果、四元式、符号表等）
+│   ├── tokens_out.txt           # 词法分析输出的 Token 序列
+│   ├── quads_ll.txt             # LL 语义分析生成的四元式
+│   └── quads_lr.txt             # LR 语义分析生成的四元式
 │
 ├── README.md
 └── requirements.txt
@@ -393,8 +393,10 @@ F → id       { stack[top].val = id.lexval; }
 
 ```bash
 # === 词法分析 ===
-# 输出 Token 序列
-python -m src.lexer.lexer input/correct/test1.txt
+# 正确输入 → 输出 Token 序列
+python -m src.lexer.lexer input/correct/test_1_lexer.txt
+# 错误输入 → 输出错误提示
+python -m src.lexer.lexer input/error/lexical_error.txt
 
 # === 自动机算法 ===
 # Regex → NFA → DFA → MinDFA 完整流水线
@@ -405,20 +407,26 @@ python -m src.automata.automata_visualizer # 流水线可视化
 # === LL(1) 语法分析 ===
 # 输出 FIRST / FOLLOW / SELECT 集 + LL(1) 预测表
 python -m src.parser_ll.first_follow
-# 输出语法分析树 + DOT 可视化
-python -m src.parser_ll.ll_parser input/correct/test1.txt
+# 正确输入 → 输出语法分析树 + DOT 可视化
+python -m src.parser_ll.ll_parser input/correct/test_2_lexer.txt
+# 错误输入 → 输出语法错误修复建议
+python -m src.parser_ll.ll_parser input/error/syntax_error.txt
 
 # === LR 语法分析 ===
 # 输出 LR 项目集 + SLR(1) 表
 python -m src.parser_lr.lr_table
-# 输出语法分析树 + 移进-归约步骤追踪
-python -m src.parser_lr.lr_parser input/correct/test1.txt
+# 正确输入 → 输出语法分析树 + 移进-归约步骤追踪
+python -m src.parser_lr.lr_parser input/correct/test_2_lexer.txt
+# 错误输入 → 输出语法错误信息
+python -m src.parser_lr.lr_parser input/error/syntax_error.txt
 
 # === 语义分析 ===
-# LL 语义分析（L-翻译）— 输出符号表和四元式
-python -m src.semantic_ll.semantic_ll input/correct/test1.txt
-# LR 语义分析（S-翻译）— 输出符号表和四元式
-python -m src.semantic_lr.semantic_lr input/correct/test1.txt
+# LL 语义分析（L-翻译）— 正确输入 → 符号表和四元式
+python -m src.semantic_ll.semantic_ll input/correct/test_2_lexer.txt
+# LR 语义分析（S-翻译）— 正确输入 → 符号表和四元式
+python -m src.semantic_lr.semantic_lr input/correct/test_2_lexer.txt
+# 语义错误输入 → 输出错误提示
+python -m src.semantic_ll.semantic_ll input/error/semantic_error.txt
 
 # === 可视化工具 ===
 # 单词分类表
@@ -433,7 +441,7 @@ python -m src.utils.lr_state_graph
 python -m src.utils.quad_visualizer
 ```
 
-> 所有命令在 `PL0_Compiler/` 目录下执行。替换 `input/correct/test1.txt` 可测试其他用例，如 `input/error/lexical_error.txt`。
+> 所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件在 `input/correct/` 下，产生正确的编译输出；错误输入文件在 `input/error/` 下，产生对应的错误提示信息。
 
 ## 环境要求
 
