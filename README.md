@@ -24,68 +24,116 @@
 PL0_Compiler/
 │
 ├── docs/                                 # 课程设计报告及参考资料
-│   ├── 编译原理课程设计报告.docx
-│   ├── 编译原理课程设计报告.pdf
-│   └── 任务要求/
+│   ├── Experiment_3.md
+│   └── shortcut/                         # 报告图表、截图等素材
+│       ├── exps1_1.png
+│       ├── exps1_2.png
+│       └── exps1_3.png
 │
 ├── flex_bison_exps/                      # 第3章 Flex/Bison 三个实验
 │   ├── task1_1_freq/
 │   │   ├── freq.l
+│   │   ├── lex.yy.c
 │   │   ├── freq.exe                      # 编译生成
-│   │   └── test_input.txt
+│   │   └── test1_1_input.txt
 │   ├── task1_2_token/
 │   │   ├── token.l
-│   │   └── token.exe
+│   │   ├── lex.yy.c
+│   │   ├── token.exe
+│   │   └── test_1_2_input.txt
 │   └── task1_3_calc/
 │       ├── calc.l
 │       ├── calc.y
-│       └── calc.exe
+│       ├── calc.tab.c
+│       ├── calc.tab.h
+│       ├── lex.yy.c
+│       ├── calc.exe
+│       └── test_1_3_input.txt
 │
 ├── src/                                  # 核心编译器源代码
 │   ├── lexer/                            # 词法分析器
-│   │   ├── lexer.py                      (或 .c)
+│   │   ├── lexer.py
 │   │   └── token.py
 │   ├── parser_ll/                        # 自顶向下 LL(1) 语法分析器
-│   │   ├── ll_parser.py
 │   │   ├── first_follow.py
+│   │   ├── ll_parser.py
 │   │   └── ll_table.py
 │   ├── parser_lr/                        # 自底向上 LR 语法分析器
-│   │   ├── lr_parser.py
 │   │   ├── lr_items.py
+│   │   ├── lr_parser.py
 │   │   └── lr_table.py
 │   ├── semantic_ll/                      # L-翻译模式（对应 LL）
-│   │   ├── semantic_ll.py
-│   │   ├── symbol_table.py
-│   │   └── quad_generator.py
+│   │   └── semantic_ll.py
 │   ├── semantic_lr/                      # S-翻译模式（对应 LR）
-│   │   ├── semantic_lr.py
-│   │   ├── symbol_table.py
-│   │   └── quad_generator.py
-│   └── main.py                           # 主入口，整合各模块
+│   │   └── semantic_lr.py
+│   └── utils/                            # 工具模块
+│       ├── quad_generator.py
+│       └── symbol_table.py
 │
-├── tests/                                # 测试用例
+├── input/                                # 测试用例输入
 │   ├── correct/                          # 正确语法用例（来自文档）
 │   │   ├── test1.txt
 │   │   └── test2.txt
-│   ├── error/                            # 错误用例
-│   │   ├── lexical_error.txt
-│   │   ├── syntax_error.txt
-│   │   └── semantic_error.txt
-│   └── output/                           # 预期输出
+│   └── error/                            # 错误用例
+│       ├── lexical_error.txt
+│       ├── syntax_error.txt
+│       └── semantic_error.txt
 │
-├── out/                                  # 编译或运行输出
+├── output/                               # 编译或运行输出
 │   ├── tokens_out.txt
 │   ├── quads_ll.txt
 │   └── quads_lr.txt
 │
-├── report/                               # 报告图表、截图等素材
-│   ├── dfa.png
-│   ├── ll_table.png
-│   └── 等等...
-│
 ├── README.md                             # 项目说明、编译运行方法
 └── requirements.txt                      # Python 依赖
 ```
+
+## 模块说明
+
+**词法分析器 `src/lexer/`**
+- `token.py` — PL/0 词法单元定义（TokenType 枚举 + Token 数据类）
+- `lexer.py` — 基于 DFA 的词法分析器，支持注释识别和错误恢复
+
+**自顶向下语法分析器 `src/parser_ll/`**
+- `first_follow.py` — 计算 PL/0 文法的 FIRST / FOLLOW 集合
+- `ll_table.py` — 构建 LL(1) 预测分析表
+- `ll_parser.py` — LL(1) 递归下降语法分析器，生成语法分析树
+
+**自底向上语法分析器 `src/parser_lr/`**
+- `lr_items.py` — 构建 LR(0) 项集规范族及 GOTO 函数
+- `lr_table.py` — 构建 SLR(1) ACTION / GOTO 表
+- `lr_parser.py` — SLR(1) 移进-归约语法分析器，生成语法分析树
+
+**语义分析**
+- `src/semantic_ll/semantic_ll.py` — L-翻译模式，遍历 LL 语法树生成四元式及符号表
+- `src/semantic_lr/semantic_lr.py` — S-翻译模式，在 LR 归约时执行语义动作，生成四元式及符号表
+
+**工具模块 `src/utils/`**
+- `symbol_table.py` — 作用域符号表，支持常量/变量/过程定义与嵌套作用域查找
+- `quad_generator.py` — 四元式中间代码生成器 + QuadVM 虚拟机执行器，可可视化四元式执行过程
+
+## 快速开始
+
+项目仅依赖 Python 3.8+ 标准库，各模块均可通过 `python -m` 独立运行：
+
+```bash
+# 词法分析 — 输出 Token 序列
+python -m src.lexer.lexer input/correct/test1.txt
+
+# LL(1) 语法分析 — 输出语法分析树
+python -m src.parser_ll.ll_parser input/correct/test1.txt
+
+# LR 语法分析 — 输出语法分析树
+python -m src.parser_lr.lr_parser input/correct/test1.txt
+
+# LL 语义分析（L-翻译）— 输出符号表和四元式
+python -m src.semantic_ll.semantic_ll input/correct/test1.txt
+
+# LR 语义分析（S-翻译）— 输出符号表和四元式
+python -m src.semantic_lr.semantic_lr input/correct/test1.txt
+```
+
+> 所有命令在 `PL0_Compiler/` 目录下执行。替换 `input/correct/test1.txt` 可测试其他用例，如 `input/error/lexical_error.txt`。
 
 ## 环境要求
 
