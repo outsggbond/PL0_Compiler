@@ -1,0 +1,22 @@
+// PL/0 Program — Test 2: Procedure, if, while, read
+const limit = 20;
+var i, result;
+
+procedure square;
+    var sq;
+    begin
+        sq := i * i;
+        write(sq)
+    end;
+
+begin
+    i := 0;
+    while i < limit do
+    begin
+        if odd i then
+            write(i);
+        i := i + 1
+    end;
+    result := i;
+    write(result)
+end.

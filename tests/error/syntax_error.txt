@@ -1,0 +1,8 @@
+// PL/0 Error Test — Syntax errors
+var x;
+begin
+    x := 5
+    y := x + 1;
+    if x > 3
+        write(x)
+end.

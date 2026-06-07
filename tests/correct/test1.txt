@@ -1,0 +1,9 @@
+// PL/0 Program — Test 1: Simple arithmetic with constants and variables
+const n = 10;
+var x, y, sum;
+begin
+    x := 5;
+    y := n;
+    sum := x + y;
+    write(sum)
+end.

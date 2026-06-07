@@ -1,0 +1,9 @@
+// PL/0 Error Test — Semantic errors
+var x;
+begin
+    x := y + 1;
+    read(z);
+    x := square + 5;
+    if odd unknown then
+        write(x)
+end.
