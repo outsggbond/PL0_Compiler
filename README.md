@@ -450,4 +450,4 @@ python -m src.utils.quad_visualizer
 - **C 编译器**：MinGW-w64（gcc）或 Visual Studio（用于编译 Flex/Bison 生成的 C 代码）
 
 开发工具：VSCode
-使用语言：Python
+使用语言：Python、C
