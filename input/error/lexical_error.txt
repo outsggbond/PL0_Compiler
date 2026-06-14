@@ -1,7 +1,0 @@
-// PL/0 Error Test — Lexical errors
-var x, @y, z;
-const tooooLong = 100;
-begin
-    x := 5;
-    $y := x + 1
-end.

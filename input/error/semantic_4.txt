@@ -1,0 +1,20 @@
+const a = 10;
+var   a, b, c;   var   b, c;
+//单行注释
+/*
+* 多行注释
+*/
+procedure p;
+    if a <= 10 then
+        begin
+            c := b + a;
+        end;
+begin
+    read(p);   过程名p不能作为read()函数的参数
+    while b # 0 do
+        begin
+            call q;   q未定义
+            write(2 * d);    d未定义
+            read(b);
+        end
+end.
