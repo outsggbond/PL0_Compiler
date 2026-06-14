@@ -32,7 +32,8 @@
 PL0_Compiler/
 │
 ├── docs/ # 课程设计报告及参考资料
-│   ├── Experiment_3.md
+│   ├── Experiment_3.md             # 第3章 Flex/Bison 实验报告
+│   ├── report.md                   # 课程设计综合报告
 │   └── shortcut/ # 报告图表、截图等素材
 │       ├── exps1_1.png
 │       ├── exps1_2.png
@@ -95,19 +96,37 @@ PL0_Compiler/
 │       ├── lr_state_graph.py            # 第5章 LR 项目集自动机 + 活前缀路径
 │       └── quad_visualizer.py           # 第6章 控制流图 + 四元式执行过程 + 临时变量分析
 │
-├── input/ # 测试用例输入（分为两类）
+├── input/ # 测试用例输入
 │   ├── correct/ # 正确输入 → 编译器产生正确的输出
-│   │   ├── test_1_lexer.txt     # 词法分析正确用例
-│   │   └── test_2_lexer.txt     # 语法/语义分析正确用例
+│   │   ├── lexer.txt            # 词法分析正确用例（含标识符、数字、运算符、注释等）
+│   │   ├── parser.txt           # 语法分析正确用例（完整 PL/0 程序）
+│   │   └── semantic.txt         # 语义分析正确用例
 │   └── error/ # 带有错误的输入 → 编译器给出错误提示
-│       ├── lexical_error.txt    # 词法错误（非法字符等）
-│       ├── syntax_error.txt     # 语法错误（缺少分号、括号不匹配等）
-│       └── semantic_error.txt   # 语义错误（未声明变量、类型不匹配等）
+│       ├── lexer.txt            # 词法错误（非法字符等）
+│       ├── parser_1.txt         # 语法错误（缺少分号）
+│       ├── parser_2.txt         # 语法错误（括号不匹配）
+│       ├── parser_3.txt         # 语法错误（关键字拼写错误）
+│       ├── parser_4.txt         # 语法错误（begin/end 不匹配）
+│       ├── semantic_1.txt       # 语义错误（未声明变量）
+│       ├── semantic_2.txt       # 语义错误（重复声明）
+│       ├── semantic_3.txt       # 语义错误（类型不匹配）
+│       └── semantic_4.txt       # 语义错误（未定义过程）
 │
-├── output/ # 编译器输出（词法分析结果、四元式、符号表等）
-│   ├── tokens_out.txt           # 词法分析输出的 Token 序列
-│   ├── quads_ll.txt             # LL 语义分析生成的四元式
-│   └── quads_lr.txt             # LR 语义分析生成的四元式
+├── output/ # 编译器输出（与 input/ 结构一一对应）
+│   ├── correct/ # 正确输入对应的编译输出
+│   │   ├── lexer.txt
+│   │   ├── parser.txt
+│   │   └── semantic.txt
+│   └── error/ # 错误输入对应的错误报告
+│       ├── lexer.txt
+│       ├── parser_1.txt
+│       ├── parser_2.txt
+│       ├── parser_3.txt
+│       ├── parser_4.txt
+│       ├── semantic_1.txt
+│       ├── semantic_2.txt
+│       ├── semantic_3.txt
+│       └── semantic_4.txt
 │
 ├── README.md
 └── requirements.txt
@@ -394,39 +413,39 @@ F → id       { stack[top].val = id.lexval; }
 ```bash
 # === 词法分析 ===
 # 正确输入 → 输出 Token 序列
-python -m src.lexer.lexer input/correct/test_1_lexer.txt
+python -m src.lexer.lexer input/correct/lexer.txt
 # 错误输入 → 输出错误提示
-python -m src.lexer.lexer input/error/lexical_error.txt
+python -m src.lexer.lexer input/error/lexer.txt
 
 # === 自动机算法 ===
 # Regex → NFA → DFA → MinDFA 完整流水线
-python -m src.automata.regex_to_nfa      # Regex → NFA
-python -m src.automata.dfa_minimizer     # 完整流水线 + 最小化测试
+python -m src.automata.regex_to_nfa        # Regex → NFA
+python -m src.automata.dfa_minimizer       # 完整流水线 + 最小化测试
 python -m src.automata.automata_visualizer # 流水线可视化
 
 # === LL(1) 语法分析 ===
 # 输出 FIRST / FOLLOW / SELECT 集 + LL(1) 预测表
 python -m src.parser_ll.first_follow
 # 正确输入 → 输出语法分析树 + DOT 可视化
-python -m src.parser_ll.ll_parser input/correct/test_2_lexer.txt
+python -m src.parser_ll.ll_parser input/correct/parser.txt
 # 错误输入 → 输出语法错误修复建议
-python -m src.parser_ll.ll_parser input/error/syntax_error.txt
+python -m src.parser_ll.ll_parser input/error/parser_1.txt
 
 # === LR 语法分析 ===
 # 输出 LR 项目集 + SLR(1) 表
 python -m src.parser_lr.lr_table
 # 正确输入 → 输出语法分析树 + 移进-归约步骤追踪
-python -m src.parser_lr.lr_parser input/correct/test_2_lexer.txt
+python -m src.parser_lr.lr_parser input/correct/parser.txt
 # 错误输入 → 输出语法错误信息
-python -m src.parser_lr.lr_parser input/error/syntax_error.txt
+python -m src.parser_lr.lr_parser input/error/parser_1.txt
 
 # === 语义分析 ===
 # LL 语义分析（L-翻译）— 正确输入 → 符号表和四元式
-python -m src.semantic_ll.semantic_ll input/correct/test_2_lexer.txt
+python -m src.semantic_ll.semantic_ll input/correct/semantic.txt
 # LR 语义分析（S-翻译）— 正确输入 → 符号表和四元式
-python -m src.semantic_lr.semantic_lr input/correct/test_2_lexer.txt
+python -m src.semantic_lr.semantic_lr input/correct/semantic.txt
 # 语义错误输入 → 输出错误提示
-python -m src.semantic_ll.semantic_ll input/error/semantic_error.txt
+python -m src.semantic_ll.semantic_ll input/error/semantic_1.txt
 
 # === 可视化工具 ===
 # 单词分类表
@@ -441,7 +460,7 @@ python -m src.utils.lr_state_graph
 python -m src.utils.quad_visualizer
 ```
 
-> 所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件在 `input/correct/` 下，产生正确的编译输出；错误输入文件在 `input/error/` 下，产生对应的错误提示信息。
+> 所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件位于 `input/correct/`，产生正确的编译输出；错误输入文件位于 `input/error/`，产生对应的错误提示信息。输出结果写入 `output/` 目录，结构与 `input/` 一一对应。
 
 ## 环境要求
 
