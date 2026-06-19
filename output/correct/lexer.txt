@@ -1,16 +1,58 @@
-const a = 10;
-var   b, c;
-procedure fun1;
-    if a <= 10 then
-        begin
-            c := b + a;
-        end;
-begin
-    read(b);
-    while b # 0 do
-        begin
-            call fun1;
-            write(2 * c);
-            read(b);
-        end
-end.
+Token(CONST, 'const', line=1)
+Token(ID, 'a', line=1)
+Token(EQ, '=', line=1)
+Token(NUMBER, '10', line=1)
+Token(SEMICOLON, ';', line=1)
+Token(VAR, 'var', line=2)
+Token(ID, 'b', line=2)
+Token(COMMA, ',', line=2)
+Token(ID, 'c', line=2)
+Token(SEMICOLON, ';', line=2)
+Token(PROCEDURE, 'procedure', line=3)
+Token(ID, 'fun1', line=3)
+Token(SEMICOLON, ';', line=3)
+Token(IF, 'if', line=4)
+Token(ID, 'a', line=4)
+Token(LE, '<=', line=4)
+Token(NUMBER, '10', line=4)
+Token(THEN, 'then', line=4)
+Token(BEGIN, 'begin', line=5)
+Token(ID, 'c', line=6)
+Token(ASSIGN, ':=', line=6)
+Token(ID, 'b', line=6)
+Token(PLUS, '+', line=6)
+Token(ID, 'a', line=6)
+Token(SEMICOLON, ';', line=6)
+Token(END, 'end', line=7)
+Token(SEMICOLON, ';', line=7)
+Token(BEGIN, 'begin', line=8)
+Token(READ, 'read', line=9)
+Token(LPAREN, '(', line=9)
+Token(ID, 'b', line=9)
+Token(RPAREN, ')', line=9)
+Token(SEMICOLON, ';', line=9)
+Token(WHILE, 'while', line=10)
+Token(ID, 'b', line=10)
+Token(NE, '#', line=10)
+Token(NUMBER, '0', line=10)
+Token(DO, 'do', line=10)
+Token(BEGIN, 'begin', line=11)
+Token(CALL, 'call', line=12)
+Token(ID, 'fun1', line=12)
+Token(SEMICOLON, ';', line=12)
+Token(WRITE, 'write', line=13)
+Token(LPAREN, '(', line=13)
+Token(NUMBER, '2', line=13)
+Token(TIMES, '*', line=13)
+Token(ID, 'c', line=13)
+Token(RPAREN, ')', line=13)
+Token(SEMICOLON, ';', line=13)
+Token(READ, 'read', line=14)
+Token(LPAREN, '(', line=14)
+Token(ID, 'b', line=14)
+Token(RPAREN, ')', line=14)
+Token(SEMICOLON, ';', line=14)
+Token(END, 'end', line=15)
+Token(END, 'end', line=16)
+Token(PERIOD, '.', line=16)
+Token(EOF, '', line=17)

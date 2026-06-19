@@ -1,1 +1,21 @@
-(语义错误,行号:2)
+  [PARSE ERROR] line 2, col 21: Unexpected token 'var' at start of statement
+  [PARSE ERROR]   [HINT] Suggestion: Check the syntax around this token.
+  [PARSE ERROR] line 2, col 21: Expected '.' at end of program
+  [PARSE ERROR]   [HINT] Suggestion: End the program with a period '.'.
+
+============================================================
+SYMBOL TABLE
+----------------------------------------
+Scope[0]: 'global' (level 0)
+  CONST  a            addr=  0 = 10
+  VAR    b            addr=  0
+  VAR    c            addr=  1
+============================================================
+
+======================================================================
+QUADRUPLE CODE (Three-Address Code)
+--------------------------------------------------
+    0: (const   ,     10,      _,      a)
+    1: (halt    ,      _,      _,      _)
+======================================================================
+  [SEMANTIC ERROR] Duplicate variable 'a'

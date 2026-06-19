@@ -5,8 +5,12 @@ Features:
 - Shift-reduce parsing using SLR(1) ACTION/GOTO tables
 - Concrete syntax tree construction
 - Panic-mode error recovery
-- Graphviz DOT visualization
+- Graphviz DOT visualization (text + rendered image)
+- Export trace and errors to CSV in output/correct or output/error
 """
+
+import os
+import csv
 
 from ..lexer.token import TokenType as TT, Token
 from ..lexer.lexer import Lexer
@@ -88,23 +92,11 @@ class LRParser:
         return self._parse_impl(trace=False)
 
     def parse_with_trace(self):
-        """Run the LR parser and return (tree, errors, trace_steps).
-
-        trace_steps is a list of dicts with keys:
-            step, stack, symbols, input_tokens, pos, action, detail
-        """
+        """Run the LR parser and return (tree, errors, trace_steps)."""
         return self._parse_impl(trace=True)
 
     def _parse_impl(self, trace=False):
-        """Internal parse implementation with optional step tracing.
-
-        Args:
-            trace: if True, record each parsing step
-
-        Returns:
-            if trace=False: (tree, errors)
-            if trace=True:  (tree, errors, trace_steps)
-        """
+        """Internal parse implementation with optional step tracing."""
         self.errors.clear()
         for c in self.conflicts:
             self.errors.append(f"Warning (grammar): {c}")
@@ -123,7 +115,6 @@ class LRParser:
             token_name = _tok_name(tok)
 
             if trace:
-                # Record step BEFORE action
                 remaining = ' '.join(_tok_name(t) for t in tokens[pos:pos + 6])
                 if pos + 6 < len(tokens):
                     remaining += ' ...'
@@ -235,14 +226,7 @@ class LRParser:
 # ── LR Step Trace Formatting ─────────────────────────────────────────
 
 def format_lr_trace(trace_steps):
-    """Format LR parsing trace steps as an ASCII table.
-
-    Args:
-        trace_steps: list of dicts from parse_with_trace()
-
-    Returns:
-        str: formatted trace table
-    """
+    """Format LR parsing trace steps as an ASCII table."""
     lines = []
     sep = "=" * 120
     lines.append(sep)
@@ -273,14 +257,7 @@ def format_lr_trace(trace_steps):
 
 
 def lr_trace_to_dict(trace_steps):
-    """Export LR trace as a list of structured dicts (for JSON).
-
-    Args:
-        trace_steps: list of dicts from parse_with_trace()
-
-    Returns:
-        list of dicts with JSON-safe values
-    """
+    """Export LR trace as a list of structured dicts (for JSON)."""
     result = []
     for step in trace_steps:
         result.append({
@@ -350,6 +327,25 @@ def tree_to_dot(tree: SyntaxTreeNode) -> str:
     return '\n'.join(lines)
 
 
+def render_tree(tree: SyntaxTreeNode, filepath="parse_tree"):
+    """Render the syntax tree as a PNG image using Graphviz.
+
+    Args:
+        tree: root of the SyntaxTreeNode tree
+        filepath: output file path without extension
+    """
+    try:
+        import graphviz
+        dot_source = tree_to_dot(tree)
+        graph = graphviz.Source(dot_source)
+        graph.render(filepath, format="png", cleanup=True)
+        print(f"Syntax tree image saved as {filepath}.png")
+    except ImportError:
+        print("graphviz Python package not installed. Skipping tree rendering.")
+    except Exception as e:
+        print(f"Could not render syntax tree: {e}")
+
+
 def print_tree(tree: SyntaxTreeNode, indent=0):
     """Text-based tree printer."""
     if tree is None:
@@ -362,29 +358,109 @@ def print_tree(tree: SyntaxTreeNode, indent=0):
         print_tree(child, indent + 1)
 
 
+# ── CSV export utilities ─────────────────────────────────────────────
+
+def save_trace_csv(trace_steps, filepath, delimiter=','):
+    """Save parsing trace steps to a CSV file.
+
+    Args:
+        trace_steps: list of dicts from parse_with_trace()
+        filepath: output CSV path
+        delimiter: column separator, default ','
+    """
+    dirname = os.path.dirname(filepath)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+    with open(filepath, 'w', newline='', encoding='utf-8-sig') as f:
+        writer = csv.writer(f, delimiter=delimiter)
+        # Header
+        writer.writerow(['Step', 'State Stack', 'Input', 'Action', 'Detail'])
+        for step in trace_steps:
+            stack_str = ' '.join(str(s) for s in step['stack'])
+            writer.writerow([
+                step['step'],
+                stack_str,
+                step['input_tokens'],
+                step.get('action', '?'),
+                step.get('detail', '')
+            ])
+    print(f"Trace steps saved as CSV: {filepath}")
+
+
+def save_errors_csv(errors, filepath, delimiter=','):
+    """Save error/warning list to a CSV file.
+
+    Args:
+        errors: list of error strings
+        filepath: output CSV path
+        delimiter: column separator, default ','
+    """
+    if not errors:
+        return
+    dirname = os.path.dirname(filepath)
+    if dirname:
+        os.makedirs(dirname, exist_ok=True)
+    with open(filepath, 'w', newline='', encoding='utf-8-sig') as f:
+        writer = csv.writer(f, delimiter=delimiter)
+        writer.writerow(['Index', 'Message'])
+        for idx, msg in enumerate(errors, 1):
+            writer.writerow([idx, msg])
+    print(f"Errors saved as CSV: {filepath}")
+
+
+# ── Main test / demo ─────────────────────────────────────────────────
+
 if __name__ == '__main__':
     import sys
     if sys.platform == 'win32':
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
+    from ..utils.output_manager import resolve_output_path, tee_output
+
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
             source = f.read()
+        output_path = resolve_output_path(sys.argv[1])
     else:
         source = 'const n=10; var x; begin x:=n; write(x) end.'
         print(f"Usage: python -m src.parser_lr.lr_parser <source_file>")
         print(f"Using built-in test:\n---\n{source}\n---\n")
+        output_path = None
 
     # Parse with trace
     lexer = Lexer(source)
     parser = LRParser(lexer)
     tree, errors, trace_steps = parser.parse_with_trace()
 
-    # Print trace
-    print(format_lr_trace(trace_steps))
+    # Print trace (mirrored to file via tee)
+    with tee_output(output_path):
+        print(format_lr_trace(trace_steps))
 
-    if errors:
-        for e in errors:
-            print(f"  [ERROR] {e}")
-    print("\nSyntax tree:")
-    print_tree(tree)
+        if errors:
+            for e in errors:
+                print(f"  [ERROR] {e}")
+
+        print("\nSyntax tree:")
+        print_tree(tree)
+
+    # Determine output directory: correct/ or error/
+    base_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'output')
+
+    # Check if there are real parsing errors (excluding grammar warnings)
+    real_errors = [e for e in errors if not e.startswith("Warning (grammar):")]
+    subdir = 'error' if real_errors else 'correct'
+    out_dir = os.path.join(base_dir, subdir)
+
+    # Save trace CSV
+    trace_csv = os.path.join(out_dir, 'trace.csv')
+    save_trace_csv(trace_steps, trace_csv)
+
+    # Save errors CSV (if any real parsing errors, excluding grammar warnings)
+    if real_errors:
+        errors_csv = os.path.join(out_dir, 'errors.csv')
+        save_errors_csv(errors, errors_csv)
+
+    # Save parse tree image
+    if tree:
+        tree_path = os.path.join(out_dir, 'parse_tree')
+        render_tree(tree, tree_path)

@@ -471,21 +471,29 @@ def visualize_quad_execution(quadgen, input_values=None):
 
 if __name__ == '__main__':
     import sys
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+    from ..utils.output_manager import resolve_output_path, tee_output
+
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
             source = f.read()
+        output_path = resolve_output_path(sys.argv[1])
     else:
         source = 'const n=10; var x; begin x:=n; write(x) end.'
         print(f"Usage: python -m src.semantic_lr.semantic_lr <source_file>")
         print(f"Using built-in test:\n---\n{source}\n---\n")
+        output_path = None
 
     from ..lexer.lexer import Lexer
 
-    sem = SemanticLR(Lexer(source))
-    quads, errors = sem.parse()
+    with tee_output(output_path):
+        sem = SemanticLR(Lexer(source))
+        quads, errors = sem.parse()
 
-    sem.symtab.display()
-    quads.display()
-    if errors:
-        for e in errors:
-            print(f"  [ERROR] {e}")
+        sem.symtab.display()
+        quads.display()
+        if errors:
+            for e in errors:
+                print(f"  [ERROR] {e}")

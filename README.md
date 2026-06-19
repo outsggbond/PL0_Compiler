@@ -90,6 +90,7 @@ PL0_Compiler/
 │   └── utils/ # 工具与可视化模块
 │       ├── symbol_table.py              # 作用域符号表（嵌套作用域查找）
 │       ├── quad_generator.py            # 四元式生成器 + QuadVM 虚拟机
+│       ├── output_manager.py            # 控制台输出自动镜像保存至 output/
 │       ├── word_classification_table.py # 第4章 ① 单词分类表（Markdown/ASCII/JSON）
 │       ├── lexer_flowchart.py           # 第4章 ②③ 状态转换图 + 词法识别流程图
 │       ├── parse_tree_visualizer.py     # 第5章 解析树可视化（DOT/ASCII/HTML + LL/LR对比）
@@ -182,6 +183,7 @@ PL0_Compiler/
 | `quad_visualizer.py` | 第6章 控制流图 + 四元式执行 + 临时变量分析 | DOT CFG + 执行表格 |
 | `symbol_table.py` | 符号表管理 | 控制台表格 |
 | `quad_generator.py` | 四元式生成 + QuadVM 虚拟机 | 控制台 + 列表导出 |
+| `output_manager.py` | 控制台输出自动镜像到 output/ 目录 | 纯文本 .txt |
 
 ## PL/0 语法
 
@@ -408,59 +410,196 @@ F → id       { stack[top].val = id.lexval; }
 
 ## 快速开始
 
-项目仅依赖 Python 3.8+ 标准库，各模块均可通过 `python -m` 独立运行：
+项目依赖 Python 3.8+ 标准库（Python 部分）和 Flex/Bison + GCC（C 部分），各模块均可独立运行：
+
+### 环境准备
 
 ```bash
-# === 词法分析 ===
-# 正确输入 → 输出 Token 序列
-python -m src.lexer.lexer input/correct/lexer.txt
-# 错误输入 → 输出错误提示
-python -m src.lexer.lexer input/error/lexer.txt
+# 进入项目根目录
+cd PL0_Compiler
 
-# === 自动机算法 ===
-# Regex → NFA → DFA → MinDFA 完整流水线
-python -m src.automata.regex_to_nfa        # Regex → NFA
-python -m src.automata.dfa_minimizer       # 完整流水线 + 最小化测试
-python -m src.automata.automata_visualizer # 流水线可视化
+# 创建 Python 虚拟环境（可选，推荐）
+python -m venv .venv
 
-# === LL(1) 语法分析 ===
-# 输出 FIRST / FOLLOW / SELECT 集 + LL(1) 预测表
-python -m src.parser_ll.first_follow
-# 正确输入 → 输出语法分析树 + DOT 可视化
-python -m src.parser_ll.ll_parser input/correct/parser.txt
-# 错误输入 → 输出语法错误修复建议
-python -m src.parser_ll.ll_parser input/error/parser_1.txt
+# 激活虚拟环境
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
 
-# === LR 语法分析 ===
-# 输出 LR 项目集 + SLR(1) 表
-python -m src.parser_lr.lr_table
-# 正确输入 → 输出语法分析树 + 移进-归约步骤追踪
-python -m src.parser_lr.lr_parser input/correct/parser.txt
-# 错误输入 → 输出语法错误信息
-python -m src.parser_lr.lr_parser input/error/parser_1.txt
-
-# === 语义分析 ===
-# LL 语义分析（L-翻译）— 正确输入 → 符号表和四元式
-python -m src.semantic_ll.semantic_ll input/correct/semantic.txt
-# LR 语义分析（S-翻译）— 正确输入 → 符号表和四元式
-python -m src.semantic_lr.semantic_lr input/correct/semantic.txt
-# 语义错误输入 → 输出错误提示
-python -m src.semantic_ll.semantic_ll input/error/semantic_1.txt
-
-# === 可视化工具 ===
-# 单词分类表
-python -m src.utils.word_classification_table
-# 词法分析流程图 + DFA 状态转换图
-python -m src.utils.lexer_flowchart
-# 解析树可视化（LL + LR 对比）
-python -m src.utils.parse_tree_visualizer
-# LR 项目集自动机 + 状态转换图
-python -m src.utils.lr_state_graph
-# 四元式执行过程 + 控制流图 + 临时变量分析
-python -m src.utils.quad_visualizer
+# 安装依赖（本项目仅使用标准库，此步可选）
+pip install -r requirements.txt
 ```
 
-> 所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件位于 `input/correct/`，产生正确的编译输出；错误输入文件位于 `input/error/`，产生对应的错误提示信息。输出结果写入 `output/` 目录，结构与 `input/` 一一对应。
+### 第3章 Flex/Bison 实验
+
+> **前置条件**：需要安装 Flex、Bison 和 GCC（MinGW-w64 或 Visual Studio）。
+> Windows 下推荐使用 [win_flex_bison](https://github.com/lexxmark/winflexbison) 或 MSYS2 安装。
+
+```bash
+# === Task 1_1: 字符频率统计 ===
+cd flex_bison_exps/task1_1_freq
+flex freq.l                  # 生成 lex.yy.c
+gcc lex.yy.c -o freq.exe     # 编译
+./freq.exe test1_1_input.txt # 运行 → 输出 A-Z 字符频率百分比
+cd ../..
+
+# === Task 1_2: 词法识别 ===
+cd flex_bison_exps/task1_2_token
+flex token.l                 # 生成 lex.yy.c
+gcc lex.yy.c -o token.exe    # 编译
+./token.exe < test_1_2_input.txt  # 运行 → 输出 <单词/数字/符号> 分类结果
+cd ../..
+
+# === Task 1_3: 计算器 ===
+cd flex_bison_exps/task1_3_calc
+bison -d calc.y              # 生成 calc.tab.c 和 calc.tab.h
+flex calc.l                  # 生成 lex.yy.c
+gcc calc.tab.c lex.yy.c -o calc.exe  # 编译
+./calc.exe < test_1_3_input.txt      # 运行 → 输出表达式计算过程和结果
+cd ../..
+```
+
+### 第4章 词法分析（手写 DFA）
+
+```bash
+# 正确输入 → 输出 Token 序列（自动保存至 output/correct/lexer.txt）
+python -m src.lexer.lexer input/correct/lexer.txt
+# 错误输入 → 输出错误提示（自动保存至 output/error/lexer.txt）
+python -m src.lexer.lexer input/error/lexer.txt
+```
+
+### 自动机算法（Regex → NFA → DFA → MinDFA）
+
+```bash
+# Regex → NFA（Thompson 构造法，支持 | * + ? [a-z] \转义）
+python -m src.automata.regex_to_nfa
+
+# NFA → DFA（子集构造法），可导入任意已构建的 NFA
+python -m src.automata.dfa
+
+# DFA → MinDFA（Hopcroft 最小化算法）— 完整流水线 + 最小化测试
+python -m src.automata.dfa_minimizer
+
+# 流水线可视化（NFA/DFA/MinDFA 的 DOT + ASCII 输出）
+python -m src.automata.automata_visualizer
+
+# （可选）安装 Graphviz 后将 DOT 渲染为 PNG
+# dot -Tpng nfa.dot -o docs/shortcut/nfa.png
+# dot -Tpng dfa.dot -o docs/shortcut/dfa.png
+# dot -Tpng mindfa.dot -o docs/shortcut/mindfa.png
+```
+
+### 第5章 LL(1) 语法分析（自顶向下）
+
+```bash
+# 计算 FIRST / FOLLOW / SELECT 集 + LL(1) 预测分析表（无输入文件，内嵌 PL/0 文法）
+python -m src.parser_ll.first_follow
+
+# 构建 LL(1) 预测分析表 + 冲突检测
+python -m src.parser_ll.ll_table
+
+# 正确输入 → 递归下降解析 + 语法分析树 + DOT 可视化（自动保存至 output/correct/parser.txt）
+python -m src.parser_ll.ll_parser input/correct/parser.txt
+
+# 所有语法错误用例 → 语法错误修复建议（自动保存至 output/error/）
+python -m src.parser_ll.ll_parser input/error/parser_1.txt  # 缺少分号
+python -m src.parser_ll.ll_parser input/error/parser_2.txt  # 括号不匹配
+python -m src.parser_ll.ll_parser input/error/parser_3.txt  # 关键字拼写错误
+python -m src.parser_ll.ll_parser input/error/parser_4.txt  # begin/end 不匹配
+```
+
+### 第5章 LR 语法分析（自底向上）
+
+```bash
+# 构建 LR(0) 项集规范族 + SLR(1) ACTION/GOTO 表
+python -m src.parser_lr.lr_table
+
+# 正确输入 → SLR(1) 移进-归约解析 + 语法树 + 步骤追踪（自动保存至 output/correct/parser.txt）
+python -m src.parser_lr.lr_parser input/correct/parser.txt
+
+# 所有语法错误用例 → 语法错误信息（自动保存至 output/error/）
+python -m src.parser_lr.lr_parser input/error/parser_1.txt  # 缺少分号
+python -m src.parser_lr.lr_parser input/error/parser_2.txt  # 括号不匹配
+python -m src.parser_lr.lr_parser input/error/parser_3.txt  # 关键字拼写错误
+python -m src.parser_lr.lr_parser input/error/parser_4.txt  # begin/end 不匹配
+```
+
+### 第6章 语义分析
+
+```bash
+# === LL 语义分析（L-翻译模式）===
+# 正确输入 → 遍历 LL 语法树，生成符号表和四元式（自动保存至 output/correct/semantic.txt）
+python -m src.semantic_ll.semantic_ll input/correct/semantic.txt
+
+# 语义错误输入 → 输出错误提示
+python -m src.semantic_ll.semantic_ll input/error/semantic_1.txt  # 未声明变量
+python -m src.semantic_ll.semantic_ll input/error/semantic_2.txt  # 重复声明
+python -m src.semantic_ll.semantic_ll input/error/semantic_3.txt  # 类型不匹配
+python -m src.semantic_ll.semantic_ll input/error/semantic_4.txt  # 未定义过程
+
+# === LR 语义分析（S-翻译模式）===
+# 正确输入 → 在 LR 归约时执行语义动作，生成符号表和四元式（自动保存至 output/correct/semantic.txt）
+python -m src.semantic_lr.semantic_lr input/correct/semantic.txt
+
+# 语义错误输入 → 输出错误提示
+python -m src.semantic_lr.semantic_lr input/error/semantic_1.txt  # 未声明变量
+python -m src.semantic_lr.semantic_lr input/error/semantic_2.txt  # 重复声明
+python -m src.semantic_lr.semantic_lr input/error/semantic_3.txt  # 类型不匹配
+python -m src.semantic_lr.semantic_lr input/error/semantic_4.txt  # 未定义过程
+```
+
+### 可视化工具
+
+```bash
+# 第4章 ① 单词分类表（Markdown / ASCII / JSON）
+python -m src.utils.word_classification_table
+
+# 第4章 ②③ 状态转换图 + 词法识别流程图（DOT + ASCII）
+python -m src.utils.lexer_flowchart
+
+# 第5章 解析树可视化（LL + LR 语法树对比，DOT / ASCII / 缩进 / JSON / HTML）
+python -m src.utils.parse_tree_visualizer
+python -m src.utils.parse_tree_visualizer input/correct/parser.txt  # 指定输入文件
+
+# 第5章 LR 项目集自动机 + 活前缀状态转换图（DOT / ASCII / JSON）
+python -m src.utils.lr_state_graph
+
+# 第6章 控制流图 + 四元式执行过程 + 临时变量分析（DOT CFG + 执行表格）
+python -m src.utils.quad_visualizer
+python -m src.utils.quad_visualizer input/correct/semantic.txt  # 指定输入文件
+
+# === （可选）Graphviz 渲染 DOT 图为 PNG ===
+# dot -Tpng parse_tree_ll.dot -o docs/shortcut/parse_tree_ll.png
+# dot -Tpng parse_tree_lr.dot -o docs/shortcut/parse_tree_lr.png
+# dot -Tpng lr_automaton.dot -o docs/shortcut/lr_automaton.png
+# dot -Tpng cfg.dot -o docs/shortcut/control_flow_graph.png
+# dot -Tpng quad_execution.dot -o docs/shortcut/quad_execution.png
+```
+
+### 一键测试脚本
+
+```bash
+# 依次运行所有正确输入用例（词法 → LL语法 → LR语法 → LL语义 → LR语义）
+python -m src.lexer.lexer input/correct/lexer.txt
+python -m src.parser_ll.ll_parser input/correct/parser.txt
+python -m src.parser_lr.lr_parser input/correct/parser.txt
+python -m src.semantic_ll.semantic_ll input/correct/semantic.txt
+python -m src.semantic_lr.semantic_lr input/correct/semantic.txt
+
+# 依次运行所有错误输入用例（验证错误检测与恢复能力）
+python -m src.lexer.lexer input/error/lexer.txt
+python -m src.parser_ll.ll_parser input/error/parser_1.txt
+python -m src.parser_ll.ll_parser input/error/parser_2.txt
+python -m src.parser_ll.ll_parser input/error/parser_3.txt
+python -m src.parser_ll.ll_parser input/error/parser_4.txt
+python -m src.semantic_ll.semantic_ll input/error/semantic_1.txt
+python -m src.semantic_ll.semantic_ll input/error/semantic_2.txt
+python -m src.semantic_ll.semantic_ll input/error/semantic_3.txt
+python -m src.semantic_ll.semantic_ll input/error/semantic_4.txt
+```
+
+> **说明**：所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件位于 `input/correct/`，产生正确的编译输出；错误输入文件位于 `input/error/`，产生对应的错误提示信息。**控制台输出自动镜像保存至 `output/` 目录**（结构与 `input/` 一一对应），无需手动 `>` 重定向。`lr_parser` 模块额外生成 `trace.csv`、`errors.csv` 和 `parse_tree.png`。
 
 ## 环境要求
 

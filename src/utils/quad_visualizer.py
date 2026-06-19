@@ -600,6 +600,10 @@ def display_all(quadgen, input_values=None):
 # ── 测试入口 ────────────────────────────────────────────────────────
 if __name__ == '__main__':
     import sys
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+    from .output_manager import resolve_output_path, tee_output
     from ..lexer.lexer import Lexer
     from ..parser_ll.ll_parser import LLParser
     from ..semantic_ll.semantic_ll import SemanticLL
@@ -607,25 +611,28 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
             source = f.read()
+        output_path = resolve_output_path(sys.argv[1])
     else:
         source = 'const n=10; var x,y; begin x:=n; y:=x+1; if y#0 then write(x) end.'
         print(f"Usage: python -m src.utils.quad_visualizer <source_file>")
         print(f"Using built-in test:\n---\n{source}\n---\n")
+        output_path = None
 
-    # 完整编译流程
-    lexer = Lexer(source)
-    parser = LLParser(lexer)
-    tree, parse_errs = parser.parse()
-    if parse_errs:
-        for e in parse_errs:
-            print(f"  [Parse Error] {e}")
+    with tee_output(output_path):
+        # 完整编译流程
+        lexer = Lexer(source)
+        parser = LLParser(lexer)
+        tree, parse_errs = parser.parse()
+        if parse_errs:
+            for e in parse_errs:
+                print(f"  [Parse Error] {e}")
 
-    if tree:
-        sem = SemanticLL()
-        quadgen, sem_errs = sem.analyze(tree)
-        if sem_errs:
-            for e in sem_errs:
-                print(f"  [Semantic Error] {e}")
+        if tree:
+            sem = SemanticLL()
+            quadgen, sem_errs = sem.analyze(tree)
+            if sem_errs:
+                for e in sem_errs:
+                    print(f"  [Semantic Error] {e}")
 
-        quadgen.display()
-        display_all(quadgen, input_values=[5, 0])
+            quadgen.display()
+            display_all(quadgen, input_values=[5, 0])

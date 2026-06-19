@@ -1,14 +1,38 @@
 # src/parser_lr/lr_items.py
-"""LR(0) items, closure, canonical collection, and GOTO for PL/0 SLR(1) parsing."""
+"""用于 PL/0 SLR(1) 语法分析的 LR(0) 项目、闭包（Closure）、
+项目集规范族（Canonical Collection）和 GOTO 函数实现。
 
+"""
+
+"""
+这个文件干的事情就是这些：
+
+文法
+ ↓
+增广文法
+ ↓
+LR项目
+ ↓
+closure()
+ ↓
+goto()
+ ↓
+项目集规范族(I0,I1...)
+ ↓
+状态转换图(DFA)
+
+"""
 from ..lexer.token import TokenType as TT
 
-# ── Augmented grammar for PL/0 ──────────────────────────────────────
-# Production index → (LHS: str, RHS: tuple of symbols)
-# Production 0: S' → Program  (augmented start)
-# Terminals: TokenType values
-# Non-terminals: strings: 'Program', 'Block', 'Statement', etc.
+"""
+── PL/0 的增广文法 ──────────────────────────────────────
+产生式编号 → (左部LHS: 字符串, 右部RHS: 符号元组)
+产生式0：S' → Program （增广开始符号）
+终结符：使用 TokenType 枚举值表示
+非终结符：使用字符串表示，例如 'Program'、'Block'、'Statement' 等
+"""
 
+# 第一部分：定义增广文法
 PRODUCTIONS_LR = [
     # idx 0: augmented start
     ("S'", ('Program',)),
@@ -82,8 +106,15 @@ PRODUCTIONS_LR = [
     ('Factor', (TT.NUMBER,)),
     ('Factor', (TT.LPAREN, 'Expression', TT.RPAREN)),
 ]
+# 第二部分：统计终结符和非终结符
+"""
+lhs = Left Hand Side
+     = 产生式左部
 
-# Build lookup: nonterminal → list of production indices
+rhs = Right Hand Side
+     = 产生式右部
+"""
+# 构建查找表：非终结符 → 对应产生式编号列表
 NONTERM_PRODS = {}
 for idx, (lhs, rhs) in enumerate(PRODUCTIONS_LR):
     NONTERM_PRODS.setdefault(lhs, []).append(idx)
@@ -94,7 +125,21 @@ for _, rhs in PRODUCTIONS_LR:
     for sym in rhs:
         if sym not in NONTERMINALS_LR:
             TERMINALS_LR.add(sym)
+"""
 
+扫描整个文法，
+
+建立：
+① 非终结符 → 产生式编号表
+
+② 非终结符集合
+
+③ 终结符集合
+
+供后面的 closure() 和 goto() 使用。
+"""
+
+# 第三部分：LRItem类
 
 class LRItem:
     """An LR(0) item: production index + dot position."""
@@ -137,9 +182,8 @@ class LRItem:
         symbols = ' '.join(str(s) for s in rhs)
         return f"{self.lhs} → {symbols}"
 
-
+# 求closure闭包
 def closure(items):
-    """Compute LR(0) closure of a set of LRItem objects."""
     result = set(items)
     changed = True
     while changed:
@@ -147,7 +191,6 @@ def closure(items):
         for item in list(result):
             sym = item.next_sym()
             if sym is not None and sym not in TERMINALS_LR:
-                # Non-terminal — add all its productions
                 for prod_idx in NONTERM_PRODS.get(sym, []):
                     new_item = LRItem(prod_idx, 0)
                     if new_item not in result:
@@ -155,9 +198,8 @@ def closure(items):
                         changed = True
     return frozenset(result)
 
-
+# 第五部分：goto()
 def goto(items, symbol):
-    """Compute GOTO(items, symbol)."""
     moved = set()
     for item in items:
         if item.next_sym() == symbol:
@@ -166,7 +208,10 @@ def goto(items, symbol):
         return None
     return closure(moved)
 
-
+""""从初始项目 S' → •Program 开始，
+不断调用 closure() 和 goto()，
+生成所有 LR(0) 状态（I0、I1、I2...）以及它们之间的跳转关系（DFA）。
+"""
 def build_canonical_collection():
     """Build the LR(0) canonical collection of item sets."""
     start_item = LRItem(0, 0)  # S' → •Program
@@ -192,7 +237,7 @@ def build_canonical_collection():
 
     return C, transitions
 
-
+# 把 TokenType 转换成人类可读的字符串。
 def _tok_name_lr(sym):
     """Convert a grammar symbol to a readable name."""
     names = {
@@ -209,7 +254,7 @@ def _tok_name_lr(sym):
     }
     return names.get(sym, str(sym))
 
-
+# 它只是可视化输出 LR(0) 项目集规范族
 def print_items(C):
     """Print the canonical collection for debugging."""
     for i, state in enumerate(C):

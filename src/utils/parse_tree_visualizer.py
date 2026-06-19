@@ -381,48 +381,55 @@ def compare_trees(ll_tree, lr_tree):
 # ── 测试入口 ────────────────────────────────────────────────────────
 if __name__ == '__main__':
     import sys
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+    from .output_manager import resolve_output_path, tee_output
     from ..lexer.lexer import Lexer
 
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
             source = f.read()
+        output_path = resolve_output_path(sys.argv[1])
     else:
         source = 'const n=10; var x; begin x:=n; write(x) end.'
         print(f"Usage: python -m src.utils.parse_tree_visualizer <source_file>")
         print(f"Using built-in test:\n---\n{source}\n---\n")
+        output_path = None
 
-    # LL 解析
-    from ..parser_ll.ll_parser import LLParser
-    lexer = Lexer(source)
-    parser = LLParser(lexer)
-    ll_tree, errors = parser.parse()
-    if errors:
-        for e in errors:
-            print(f"  [LL Error] {e}")
+    with tee_output(output_path):
+        # LL 解析
+        from ..parser_ll.ll_parser import LLParser
+        lexer = Lexer(source)
+        parser = LLParser(lexer)
+        ll_tree, errors = parser.parse()
+        if errors:
+            for e in errors:
+                print(f"  [LL Error] {e}")
 
-    if ll_tree:
-        print("\n=== LL ASCII Tree ===")
-        print(visualize_parse_tree(ll_tree, "ascii", "LL(1) Parse Tree"))
+        if ll_tree:
+            print("\n=== LL ASCII Tree ===")
+            print(visualize_parse_tree(ll_tree, "ascii", "LL(1) Parse Tree"))
 
-        print("\n=== LL DOT ===")
-        print(visualize_parse_tree(ll_tree, "dot"))
+            print("\n=== LL DOT ===")
+            print(visualize_parse_tree(ll_tree, "dot"))
 
-        print("\n=== LL JSON ===")
-        print(visualize_parse_tree(ll_tree, "json"))
+            print("\n=== LL JSON ===")
+            print(visualize_parse_tree(ll_tree, "json"))
 
-    # LR 解析
-    from ..parser_lr.lr_parser import LRParser
-    lexer2 = Lexer(source)
-    lr_parser = LRParser(lexer2)
-    lr_tree, lr_errors = lr_parser.parse()
-    if lr_errors:
-        for e in lr_errors:
-            print(f"  [LR Error] {e}")
+        # LR 解析
+        from ..parser_lr.lr_parser import LRParser
+        lexer2 = Lexer(source)
+        lr_parser = LRParser(lexer2)
+        lr_tree, lr_errors = lr_parser.parse()
+        if lr_errors:
+            for e in lr_errors:
+                print(f"  [LR Error] {e}")
 
-    if lr_tree:
-        print("\n=== LR ASCII Tree ===")
-        print(visualize_parse_tree(lr_tree, "ascii", "LR Parse Tree"))
+        if lr_tree:
+            print("\n=== LR ASCII Tree ===")
+            print(visualize_parse_tree(lr_tree, "ascii", "LR Parse Tree"))
 
-    if ll_tree and lr_tree:
-        print("\n=== Comparison ===")
-        print(compare_trees(ll_tree, lr_tree))
+        if ll_tree and lr_tree:
+            print("\n=== Comparison ===")
+            print(compare_trees(ll_tree, lr_tree))

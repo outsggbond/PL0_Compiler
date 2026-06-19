@@ -288,3 +288,5 @@ Program
               end [end]
       end [end]
   . [.]
+Trace steps saved as CSV: K:\PL0_Compiler\PL0_Compiler\src\parser_lr\..\..\output\correct\trace.csv
+Could not render syntax tree: failed to execute WindowsPath('dot'), make sure the Graphviz executables are on your systems' PATH

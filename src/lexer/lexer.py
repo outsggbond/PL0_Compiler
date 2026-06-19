@@ -132,17 +132,25 @@ class Lexer:
 
 if __name__ == '__main__':
     import sys
+    if sys.platform == 'win32':
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+    from ..utils.output_manager import resolve_output_path, tee_output
+
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
             source = f.read()
+        output_path = resolve_output_path(sys.argv[1])
     else:
         source = 'var x, y; begin x := 5; y := x + 1; write(y) end.'
         print(f"Usage: python -m src.lexer.lexer <source_file>")
         print(f"Using built-in test:\n---\n{source}\n---\n")
+        output_path = None
 
-    lexer = Lexer(source)
-    while True:
-        tok = lexer.get_next_token()
-        print(tok)
-        if tok.type == TokenType.EOF:
-            break
+    with tee_output(output_path):
+        lexer = Lexer(source)
+        while True:
+            tok = lexer.get_next_token()
+            print(tok)
+            if tok.type == TokenType.EOF:
+                break

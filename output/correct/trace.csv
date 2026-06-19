@@ -1,0 +1,134 @@
+﻿Step,State Stack,Input,Action,Detail
+0,0,const id = num ; var ...,SHIFT,shift to state 4
+1,0 4,id = num ; var id ...,SHIFT,shift to state 21
+2,0 4 21,"= num ; var id , ...",SHIFT,shift to state 43
+3,0 4 21 43,"num ; var id , id ...",SHIFT,shift to state 70
+4,0 4 21 43 70,"; var id , id ; ...",REDUCE,"reduce by r9: ConstRest → eps  → GOTO(70, ConstRest) = 90"
+5,0 4 21 43 70 90,"; var id , id ; ...",SHIFT,shift to state 100
+6,0 4 21 43 70 90 100,"var id , id ; procedure ...",REDUCE,"reduce by r7: ConstDecl → const id = num ConstRest ;  → GOTO(0, ConstDecl) = 13"
+7,0 13,"var id , id ; procedure ...",SHIFT,shift to state 8
+8,0 13 8,"id , id ; procedure id ...",SHIFT,shift to state 32
+9,0 13 8 32,", id ; procedure id ; ...",SHIFT,shift to state 64
+10,0 13 8 32 64,id ; procedure id ; if ...,SHIFT,shift to state 85
+11,0 13 8 32 64 85,; procedure id ; if id ...,REDUCE,"reduce by r12: VarRest → eps  → GOTO(85, VarRest) = 98"
+12,0 13 8 32 64 85 98,; procedure id ; if id ...,REDUCE,"reduce by r11: VarRest → , id VarRest  → GOTO(32, VarRest) = 63"
+13,0 13 8 32 63,; procedure id ; if id ...,SHIFT,shift to state 84
+14,0 13 8 32 63 84,procedure id ; if id <= ...,REDUCE,"reduce by r10: VarDecl → var id VarRest ;  → GOTO(13, VarDecl) = 36"
+15,0 13 36,procedure id ; if id <= ...,SHIFT,shift to state 15
+16,0 13 36 15,id ; if id <= num ...,SHIFT,shift to state 39
+17,0 13 36 15 39,; if id <= num then ...,SHIFT,shift to state 69
+18,0 13 36 15 39 69,if id <= num then begin ...,SHIFT,shift to state 6
+19,0 13 36 15 39 69 6,id <= num then begin id ...,REDUCE,"reduce by r39: Sign → eps  → GOTO(6, Sign) = 25"
+20,0 13 36 15 39 69 6 25,id <= num then begin id ...,SHIFT,shift to state 48
+21,0 13 36 15 39 69 6 25 48,<= num then begin id := ...,REDUCE,"reduce by r47: Factor → id  → GOTO(25, Factor) = 50"
+22,0 13 36 15 39 69 6 25 50,<= num then begin id := ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76"
+23,0 13 36 15 39 69 6 25 50 76,<= num then begin id := ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52"
+24,0 13 36 15 39 69 6 25 52,<= num then begin id := ...,REDUCE,"reduce by r42: TermList → eps  → GOTO(52, TermList) = 78"
+25,0 13 36 15 39 69 6 25 52 78,<= num then begin id := ...,REDUCE,"reduce by r36: Expression → Sign Term TermList  → GOTO(6, Expression) = 30"
+26,0 13 36 15 39 69 6 30,<= num then begin id := ...,SHIFT,shift to state 58
+27,0 13 36 15 39 69 6 30 58,num then begin id := id ...,REDUCE,"reduce by r33: RelOp → <=  → GOTO(30, RelOp) = 57"
+28,0 13 36 15 39 69 6 30 57,num then begin id := id ...,REDUCE,"reduce by r39: Sign → eps  → GOTO(57, Sign) = 25"
+29,0 13 36 15 39 69 6 30 57 25,num then begin id := id ...,SHIFT,shift to state 49
+30,0 13 36 15 39 69 6 30 57 25 49,then begin id := id + ...,REDUCE,"reduce by r48: Factor → num  → GOTO(25, Factor) = 50"
+31,0 13 36 15 39 69 6 30 57 25 50,then begin id := id + ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76"
+32,0 13 36 15 39 69 6 30 57 25 50 76,then begin id := id + ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52"
+33,0 13 36 15 39 69 6 30 57 25 52,then begin id := id + ...,REDUCE,"reduce by r42: TermList → eps  → GOTO(52, TermList) = 78"
+34,0 13 36 15 39 69 6 30 57 25 52 78,then begin id := id + ...,REDUCE,"reduce by r36: Expression → Sign Term TermList  → GOTO(57, Expression) = 82"
+35,0 13 36 15 39 69 6 30 57 82,then begin id := id + ...,REDUCE,"reduce by r29: Condition → Expression RelOp Expression  → GOTO(6, Condition) = 28"
+36,0 13 36 15 39 69 6 28,then begin id := id + ...,SHIFT,shift to state 53
+37,0 13 36 15 39 69 6 28 53,begin id := id + id ...,SHIFT,shift to state 5
+38,0 13 36 15 39 69 6 28 53 5,id := id + id ; ...,SHIFT,shift to state 2
+39,0 13 36 15 39 69 6 28 53 5 2,:= id + id ; end ...,SHIFT,shift to state 19
+40,0 13 36 15 39 69 6 28 53 5 2 19,id + id ; end ; ...,REDUCE,"reduce by r39: Sign → eps  → GOTO(19, Sign) = 25"
+41,0 13 36 15 39 69 6 28 53 5 2 19 25,id + id ; end ; ...,SHIFT,shift to state 48
+42,0 13 36 15 39 69 6 28 53 5 2 19 25 48,+ id ; end ; begin ...,REDUCE,"reduce by r47: Factor → id  → GOTO(25, Factor) = 50"
+43,0 13 36 15 39 69 6 28 53 5 2 19 25 50,+ id ; end ; begin ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76"
+44,0 13 36 15 39 69 6 28 53 5 2 19 25 50 76,+ id ; end ; begin ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52"
+45,0 13 36 15 39 69 6 28 53 5 2 19 25 52,+ id ; end ; begin ...,SHIFT,shift to state 79
+46,0 13 36 15 39 69 6 28 53 5 2 19 25 52 79,id ; end ; begin read ...,SHIFT,shift to state 48
+47,0 13 36 15 39 69 6 28 53 5 2 19 25 52 79 48,; end ; begin read ( ...,REDUCE,"reduce by r47: Factor → id  → GOTO(79, Factor) = 50"
+48,0 13 36 15 39 69 6 28 53 5 2 19 25 52 79 50,; end ; begin read ( ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76"
+49,0 13 36 15 39 69 6 28 53 5 2 19 25 52 79 50 76,; end ; begin read ( ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(79, Term) = 96"
+50,0 13 36 15 39 69 6 28 53 5 2 19 25 52 79 96,; end ; begin read ( ...,REDUCE,"reduce by r42: TermList → eps  → GOTO(96, TermList) = 104"
+51,0 13 36 15 39 69 6 28 53 5 2 19 25 52 79 96 104,; end ; begin read ( ...,REDUCE,"reduce by r40: TermList → + Term TermList  → GOTO(52, TermList) = 78"
+52,0 13 36 15 39 69 6 28 53 5 2 19 25 52 78,; end ; begin read ( ...,REDUCE,"reduce by r36: Expression → Sign Term TermList  → GOTO(19, Expression) = 42"
+53,0 13 36 15 39 69 6 28 53 5 2 19 42,; end ; begin read ( ...,REDUCE,"reduce by r16: Statement → id := Expression  → GOTO(5, Statement) = 24"
+54,0 13 36 15 39 69 6 28 53 5 24,; end ; begin read ( ...,SHIFT,shift to state 47
+55,0 13 36 15 39 69 6 28 53 5 24 47,end ; begin read ( id ...,REDUCE,"reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73"
+56,0 13 36 15 39 69 6 28 53 5 24 47 73,end ; begin read ( id ...,REDUCE,"reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23"
+57,0 13 36 15 39 69 6 28 53 5 23,end ; begin read ( id ...,SHIFT,shift to state 46
+58,0 13 36 15 39 69 6 28 53 5 23 46,; begin read ( id ) ...,REDUCE,"reduce by r18: Statement → begin StmtList end  → GOTO(53, Statement) = 81"
+59,0 13 36 15 39 69 6 28 53 81,; begin read ( id ) ...,REDUCE,"reduce by r19: Statement → if Condition then Statement  → GOTO(69, Statement) = 17"
+60,0 13 36 15 39 69 17,; begin read ( id ) ...,REDUCE,"reduce by r6: Block → Statement  → GOTO(69, Block) = 89"
+61,0 13 36 15 39 69 89,; begin read ( id ) ...,SHIFT,shift to state 99
+62,0 13 36 15 39 69 89 99,begin read ( id ) ; ...,REDUCE,"reduce by r15: ProcDecl → procedure id ; Block ;  → GOTO(36, ProcDecl) = 14"
+63,0 13 36 14,begin read ( id ) ; ...,REDUCE,"reduce by r14: ProcDecls → eps  → GOTO(14, ProcDecls) = 38"
+64,0 13 36 14 38,begin read ( id ) ; ...,REDUCE,"reduce by r13: ProcDecls → ProcDecl ProcDecls  → GOTO(36, ProcDecls) = 67"
+65,0 13 36 67,begin read ( id ) ; ...,SHIFT,shift to state 5
+66,0 13 36 67 5,read ( id ) ; while ...,SHIFT,shift to state 11
+67,0 13 36 67 5 11,( id ) ; while id ...,SHIFT,shift to state 35
+68,0 13 36 67 5 11 35,id ) ; while id # ...,SHIFT,shift to state 66
+69,0 13 36 67 5 11 35 66,) ; while id # num ...,SHIFT,shift to state 87
+70,0 13 36 67 5 11 35 66 87,; while id # num do ...,REDUCE,"reduce by r21: Statement → read ( id )  → GOTO(5, Statement) = 24"
+71,0 13 36 67 5 24,; while id # num do ...,SHIFT,shift to state 47
+72,0 13 36 67 5 24 47,while id # num do begin ...,SHIFT,shift to state 7
+73,0 13 36 67 5 24 47 7,id # num do begin call ...,REDUCE,"reduce by r39: Sign → eps  → GOTO(7, Sign) = 25"
+74,0 13 36 67 5 24 47 7 25,id # num do begin call ...,SHIFT,shift to state 48
+75,0 13 36 67 5 24 47 7 25 48,# num do begin call id ...,REDUCE,"reduce by r47: Factor → id  → GOTO(25, Factor) = 50"
+76,0 13 36 67 5 24 47 7 25 50,# num do begin call id ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76"
+77,0 13 36 67 5 24 47 7 25 50 76,# num do begin call id ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52"
+78,0 13 36 67 5 24 47 7 25 52,# num do begin call id ...,REDUCE,"reduce by r42: TermList → eps  → GOTO(52, TermList) = 78"
+79,0 13 36 67 5 24 47 7 25 52 78,# num do begin call id ...,REDUCE,"reduce by r36: Expression → Sign Term TermList  → GOTO(7, Expression) = 30"
+80,0 13 36 67 5 24 47 7 30,# num do begin call id ...,SHIFT,shift to state 55
+81,0 13 36 67 5 24 47 7 30 55,num do begin call id ; ...,REDUCE,"reduce by r31: RelOp → #  → GOTO(30, RelOp) = 57"
+82,0 13 36 67 5 24 47 7 30 57,num do begin call id ; ...,REDUCE,"reduce by r39: Sign → eps  → GOTO(57, Sign) = 25"
+83,0 13 36 67 5 24 47 7 30 57 25,num do begin call id ; ...,SHIFT,shift to state 49
+84,0 13 36 67 5 24 47 7 30 57 25 49,do begin call id ; write ...,REDUCE,"reduce by r48: Factor → num  → GOTO(25, Factor) = 50"
+85,0 13 36 67 5 24 47 7 30 57 25 50,do begin call id ; write ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76"
+86,0 13 36 67 5 24 47 7 30 57 25 50 76,do begin call id ; write ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52"
+87,0 13 36 67 5 24 47 7 30 57 25 52,do begin call id ; write ...,REDUCE,"reduce by r42: TermList → eps  → GOTO(52, TermList) = 78"
+88,0 13 36 67 5 24 47 7 30 57 25 52 78,do begin call id ; write ...,REDUCE,"reduce by r36: Expression → Sign Term TermList  → GOTO(57, Expression) = 82"
+89,0 13 36 67 5 24 47 7 30 57 82,do begin call id ; write ...,REDUCE,"reduce by r29: Condition → Expression RelOp Expression  → GOTO(7, Condition) = 31"
+90,0 13 36 67 5 24 47 7 31,do begin call id ; write ...,SHIFT,shift to state 62
+91,0 13 36 67 5 24 47 7 31 62,begin call id ; write ( ...,SHIFT,shift to state 5
+92,0 13 36 67 5 24 47 7 31 62 5,call id ; write ( num ...,SHIFT,shift to state 3
+93,0 13 36 67 5 24 47 7 31 62 5 3,id ; write ( num * ...,SHIFT,shift to state 20
+94,0 13 36 67 5 24 47 7 31 62 5 3 20,; write ( num * id ...,REDUCE,"reduce by r17: Statement → call id  → GOTO(5, Statement) = 24"
+95,0 13 36 67 5 24 47 7 31 62 5 24,; write ( num * id ...,SHIFT,shift to state 47
+96,0 13 36 67 5 24 47 7 31 62 5 24 47,write ( num * id ) ...,SHIFT,shift to state 9
+97,0 13 36 67 5 24 47 7 31 62 5 24 47 9,( num * id ) ; ...,SHIFT,shift to state 33
+98,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33,num * id ) ; read ...,REDUCE,"reduce by r39: Sign → eps  → GOTO(33, Sign) = 25"
+99,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25,num * id ) ; read ...,SHIFT,shift to state 49
+100,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 49,* id ) ; read ( ...,REDUCE,"reduce by r48: Factor → num  → GOTO(25, Factor) = 50"
+101,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 50,* id ) ; read ( ...,SHIFT,shift to state 74
+102,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 50 74,id ) ; read ( id ...,SHIFT,shift to state 48
+103,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 50 74 48,) ; read ( id ) ...,REDUCE,"reduce by r47: Factor → id  → GOTO(74, Factor) = 93"
+104,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 50 74 93,) ; read ( id ) ...,REDUCE,"reduce by r46: FactorList → eps  → GOTO(93, FactorList) = 102"
+105,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 50 74 93 102,) ; read ( id ) ...,REDUCE,"reduce by r44: FactorList → * Factor FactorList  → GOTO(50, FactorList) = 76"
+106,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 50 76,) ; read ( id ) ...,REDUCE,"reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52"
+107,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 52,) ; read ( id ) ...,REDUCE,"reduce by r42: TermList → eps  → GOTO(52, TermList) = 78"
+108,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 25 52 78,) ; read ( id ) ...,REDUCE,"reduce by r36: Expression → Sign Term TermList  → GOTO(33, Expression) = 65"
+109,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 65,) ; read ( id ) ...,SHIFT,shift to state 86
+110,0 13 36 67 5 24 47 7 31 62 5 24 47 9 33 65 86,; read ( id ) ; ...,REDUCE,"reduce by r22: Statement → write ( Expression )  → GOTO(47, Statement) = 24"
+111,0 13 36 67 5 24 47 7 31 62 5 24 47 24,; read ( id ) ; ...,SHIFT,shift to state 47
+112,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47,read ( id ) ; end ...,SHIFT,shift to state 11
+113,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 11,( id ) ; end end ...,SHIFT,shift to state 35
+114,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 11 35,id ) ; end end . ...,SHIFT,shift to state 66
+115,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 11 35 66,) ; end end . $,SHIFT,shift to state 87
+116,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 11 35 66 87,; end end . $,REDUCE,"reduce by r21: Statement → read ( id )  → GOTO(47, Statement) = 24"
+117,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 24,; end end . $,SHIFT,shift to state 47
+118,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 24 47,end end . $,REDUCE,"reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73"
+119,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 24 47 73,end end . $,REDUCE,"reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73"
+120,0 13 36 67 5 24 47 7 31 62 5 24 47 24 47 73,end end . $,REDUCE,"reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73"
+121,0 13 36 67 5 24 47 7 31 62 5 24 47 73,end end . $,REDUCE,"reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23"
+122,0 13 36 67 5 24 47 7 31 62 5 23,end end . $,SHIFT,shift to state 46
+123,0 13 36 67 5 24 47 7 31 62 5 23 46,end . $,REDUCE,"reduce by r18: Statement → begin StmtList end  → GOTO(62, Statement) = 83"
+124,0 13 36 67 5 24 47 7 31 62 83,end . $,REDUCE,"reduce by r20: Statement → while Condition do Statement  → GOTO(47, Statement) = 24"
+125,0 13 36 67 5 24 47 24,end . $,REDUCE,"reduce by r23: StmtList → Statement  → GOTO(47, StmtList) = 73"
+126,0 13 36 67 5 24 47 73,end . $,REDUCE,"reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23"
+127,0 13 36 67 5 23,end . $,SHIFT,shift to state 46
+128,0 13 36 67 5 23 46,. $,REDUCE,"reduce by r18: Statement → begin StmtList end  → GOTO(67, Statement) = 88"
+129,0 13 36 67 88,. $,REDUCE,"reduce by r2: Block → ConstDecl VarDecl ProcDecls Statement  → GOTO(0, Block) = 10"
+130,0 10,. $,SHIFT,shift to state 34
+131,0 10 34,$,REDUCE,"reduce by r1: Program → Block .  → GOTO(0, Program) = 12"
+132,0 12,$,ACCEPT,accept
