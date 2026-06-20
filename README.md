@@ -104,14 +104,14 @@ PL0_Compiler/
 │   │   └── semantic.txt         # 语义分析正确用例
 │   └── error/ # 带有错误的输入 → 编译器给出错误提示
 │       ├── lexer.txt            # 词法错误（非法字符等）
-│       ├── parser_1.txt         # 语法错误（缺少分号）
-│       ├── parser_2.txt         # 语法错误（括号不匹配）
-│       ├── parser_3.txt         # 语法错误（关键字拼写错误）
+│       ├── parser_1.txt         # 语法错误（const 声明误用赋值号 :=）
+│       ├── parser_2.txt         # 语法错误（括号不匹配、缺少逗号等）
+│       ├── parser_3.txt         # 语法错误（缺少程序声明部分）
 │       ├── parser_4.txt         # 语法错误（begin/end 不匹配）
-│       ├── semantic_1.txt       # 语义错误（未声明变量）
-│       ├── semantic_2.txt       # 语义错误（重复声明）
-│       ├── semantic_3.txt       # 语义错误（类型不匹配）
-│       └── semantic_4.txt       # 语义错误（未定义过程）
+│       ├── semantic_1.txt       # 语义错误（重复声明：const 与 var 同名）
+│       ├── semantic_2.txt       # 语义错误（类型错误：过程名误用作 read 参数）
+│       ├── semantic_3.txt       # 语义错误（未定义过程）
+│       └── semantic_4.txt       # 语义错误（多种：重复声明+类型错误+未定义过程）
 │
 ├── output/ # 编译器输出（与 input/ 结构一一对应）
 │   ├── correct/ # 正确输入对应的编译输出
@@ -209,204 +209,208 @@ PL0_Compiler/
 <条件语句>        ::= if <条件> then <语句>
 <过程调用语句>    ::= call <标识符>
 <当型循环语句>    ::= while <条件> do <语句>
-<读语句>          ::= read '(' <标识符> { , <标识符> } ')' ;
-<写语句>          ::= write '(' <表达式> { , <表达式> } ')' ;
+<读语句>          ::= read '(' <标识符> ')'
+<写语句>          ::= write '(' <表达式> ')'
 ```
 
 ## 一、L翻译模式（自顶向下，LL(1)）
 
-### 属性定义
+L-翻译模式在 LL 递归下降解析生成的语法树上做深度优先遍历，执行语义动作：继承属性通过参数向下传递，综合属性（如 `addr`）通过返回值向上传递。核心文件：`src/semantic_ll/semantic_ll.py`。
 
-- **综合属性**：`val`, `addr`, `code`, `type`, `width`
-- **继承属性**：`true`, `false`, `next`, `offset`, `inh`
+### 四元式指令集
 
-### 辅助函数
+| 指令 | 格式 | 说明 |
+|------|------|------|
+| `const` | `(const, value, _, name)` | 常量声明 |
+| `assign` | `(assign, src, _, dest)` | 赋值 |
+| `+` `-` `*` `/` | `(op, left, right, result)` | 算术运算，result 为临时变量 |
+| `jump` | `(jump, _, _, label)` | 无条件跳转 |
+| `j<` `j#` 等 | `(jrop, a, b, label)` | 条件跳转：if a rop b goto label |
+| `odd` | `(odd, src, _, result)` | 奇偶测试 |
+| `read` | `(read, _, _, name)` | 读入变量 |
+| `write` | `(write, src, _, _)` | 输出表达式值 |
+| `call` | `(call, _, _, proc)` | 过程调用 |
+| `ret` | `(ret, _, _, _)` | 过程返回 |
+| `label` | `(label, _, _, L)` | 标号定义 |
+| `halt` | `(halt, _, _, _)` | 程序终止 |
 
-- `newtemp()`：生成新临时变量
-- `newlabel()`：生成新标号
-- `label(L)`：将下一条指令的标号赋给L
-- `gen(code)`：生成三地址指令
+### 语义动作（按语法成分）
 
-### 声明语句的L翻译模式
-
-```
-P → { offset = 0 } D
-
-D → T id ; { enter(id.lexval, T.type, offset); offset = offset + T.width } D
-
-D → ε
-
-T → int   { T.type = int; T.width = 4; }
-T → real  { T.type = real; T.width = 8; }
-```
-
-### 赋值语句的L翻译模式
+**声明部分**
 
 ```
-S → id = E ; { gen(id.lexeme '=' E.addr); }
+Program → Block           { 遍历子节点; emit('halt') }
 
-E → E1 + T   { E.addr = newtemp(); gen(E.addr '=' E1.addr '+' T.addr); }
-E → T        { E.addr = T.addr; }
-T → T1 * F   { T.addr = newtemp(); gen(T.addr '=' T1.addr '*' F.addr); }
-T → F        { T.addr = F.addr; }
-F → ( E )    { F.addr = E.addr; }
-F → id       { F.addr = id.lexeme; }
-F → number   { F.addr = number.val; }
+ConstDecl → const id = num { , id = num } ;
+  每个 id=num:            { symtab.insert(id, CONST, num);
+                            emit('const', num, _, id) }
+
+VarDecl → var id { , id } ;
+  每个 id:                { symtab.insert(id, VAR, level) }
+
+ProcDecl → procedure id ; Block ;
+  { symtab.insert(id, PROC);
+    skip = emit('jump', _, _, PATCH);  // 声明处跳过过程体
+    emit('label', _, _, body_l);
+    symtab.enter_scope(id);
+    遍历 Block;                        // 递归翻译过程体
+    emit('ret');
+    symtab.exit_scope();
+    将 skip 的目标回填到 ret 之后; }
 ```
 
-### 布尔表达式的L翻译模式（跳转代码）
+**可执行语句**
 
 ```
-B → E1 rop E2
-    { gen('if ' E1.addr rop E2.addr 'goto ' B.true);
-      gen('goto ' B.false); }
+id := E                   { result = E.addr;
+                            emit('assign', result, _, id) }
 
-B → true   { gen('goto ' B.true); }
-B → false  { gen('goto ' B.false); }
+read ( id )               { emit('read', _, _, id) }
 
-B → ( B1 ) { B1.true = B.true; B1.false = B.false; }
+write ( E )               { emit('write', E.addr, _, _) }
 
-B → ┑ B1   { B1.true = B.false; B1.false = B.true; }
+call id                   { emit('call', _, _, id) }
 
-B → B1 ∨ B2
-    { B1.true = B.true;
-      B1.false = newlabel();
-      B2.true = B.true;
-      B2.false = B.false;
-      label(B1.false); }
+begin S1 ; ... ; Sn end   { 依次遍历 S1 .. Sn }
 
-B → B1 ∧ B2
-    { B1.true = newlabel();
-      B1.false = B.false;
-      B2.true = B.true;
-      B2.false = B.false;
-      label(B1.true); }
+if Cond then S
+  { true_l, false_l = newlabel(), newlabel();
+    翻译 Cond → 真跳 true_l / 假跳 false_l;
+    emit('label', _, _, true_l);
+    遍历 S;
+    emit('label', _, _, false_l); }
+
+while Cond do S
+  { loop_l, test_l, end_l = newlabel(), newlabel(), newlabel();
+    emit('label', _, _, loop_l);
+    翻译 Cond → 真跳 test_l / 假跳 end_l;
+    emit('label', _, _, test_l);
+    遍历 S;
+    emit('jump', _, _, loop_l);
+    emit('label', _, _, end_l); }
 ```
 
-### 控制语句的L翻译模式
+**表达式（综合属性 addr）**
 
 ```
-S → if B then S1 else S2
-    { B.true = newlabel(); B.false = newlabel();
-      label(B.true);
-      S1.next = S.next;
-      gen('goto ' S.next);
-      label(B.false);
-      S2.next = S.next; }
+E → [+|-] T { + T | - T }
+  { 每次运算: Ti = newtemp(); emit(op, left, right, Ti); E.addr = Ti }
 
-S → if B then S1
-    { B.true = newlabel(); B.false = S.next;
-      label(B.true);
-      S1.next = S.next; }
+T → F { * F | / F }      { 同上，乘除 }
 
-S → while B do S1
-    { B.begin = newlabel();
-      label(B.begin);
-      B.true = newlabel(); B.false = S.next;
-      label(B.true);
-      S1.next = B.begin;
-      gen('goto ' B.begin); }
+F → id                    { F.addr = id }
+F → num                   { F.addr = num }
+F → ( E )                 { F.addr = E.addr }
+```
 
-S → S1 S2
-    { S1.next = newlabel();
-      label(S1.next);
-      S2.next = S.next; }
+**条件（跳转代码）**
+
+```
+Condition → odd E
+  { Ti = newtemp(); emit('odd', E.addr, _, Ti);
+    emit('j#', Ti, 0, true_label);
+    emit('jump', _, _, false_label); }
+
+Condition → E1 rop E2
+  { emit('j'+rop, E1.addr, E2.addr, true_label);
+    emit('jump', _, _, false_label); }
 ```
 
 ---
 
 ## 二、S翻译模式（自底向上，LR + 回填）
 
-### 属性定义（仅综合属性）
+S-翻译模式嵌入在 SLR(1) 移进-归约解析过程中：每当归约一个产生式时，从语义栈弹出 RHS 符号的综合属性，执行语义动作，将结果压回语义栈。控制流使用回填技术处理。核心文件：`src/semantic_lr/semantic_lr.py`。
 
-- `E.truelist`, `E.falselist`：待回填的真假跳转指令列表
-- `S.nextlist`：待回填的后继指令列表
-- `M.gotostm`：标记非终结符记录的下一条指令地址
+使用与 LL 语义分析相同的四元式指令集（见上文），共用 `symbol_table.py` 和 `quad_generator.py`。
 
-### 辅助函数
-
-- `makelist(i)`：创建只包含指令i的列表
-- `merge(l1,l2)`：合并两个列表
-- `backpatch(p, i)`：将列表p中所有指令的目标标号填充为i
-- `nextstm`：下一条指令的地址
-- `gen(code)`：生成指令，nextstm加1
-
-### 布尔表达式的S翻译模式（回填）
+### 运行时结构
 
 ```
-B → E1 rop E2
-    { B.truelist = makelist(nextstm);
-      B.falselist = makelist(nextstm+1);
-      gen('if ' E1.addr rop E2.addr 'goto _');
-      gen('goto _'); }
-
-B → true
-    { B.truelist = makelist(nextstm);
-      gen('goto _'); }
-
-B → false
-    { B.falselist = makelist(nextstm);
-      gen('goto _'); }
-
-B → ( B1 )
-    { B.truelist = B1.truelist; B.falselist = B1.falselist; }
-
-B → ┑ B1
-    { B.truelist = B1.falselist; B.falselist = B1.truelist; }
-
-B → B1 ∨ M B2
-    { backpatch(B1.falselist, M.gotostm);
-      B.truelist = merge(B1.truelist, B2.truelist);
-      B.falselist = B2.falselist; }
-
-B → B1 ∧ M B2
-    { backpatch(B1.truelist, M.gotostm);
-      B.truelist = B2.truelist;
-      B.falselist = merge(B1.falselist, B2.falselist); }
-
-M → ε
-    { M.gotostm = nextstm; }
+状态栈:  [s0, s1, ..., sn]     ← SLR(1) 分析栈
+语义栈:  [v0, v1, ..., vn]     ← 与状态栈同步增长/收缩
+token流: 词法分析器输出的 Token 序列
 ```
 
-### 控制语句的S翻译模式（回填）
+### 主要产生式的语义动作
+
+**声明**
 
 ```
-S → if E then M1 S1 N else M2 S2
-    { backpatch(E.truelist, M1.gotostm);
-      backpatch(E.falselist, M2.gotostm);
-      S.nextlist = merge(merge(S1.nextlist, N.nextlist), S2.nextlist); }
+ConstDecl → const id = num ConstRest ;
+  { name = id; value = num;
+    symtab.insert(name, CONST, value);
+    emit('const', value, _, name); }
 
-N → ε
-    { N.nextlist = makelist(nextstm);
-      gen('goto _'); }
+VarDecl → var id VarRest ;
+  { symtab.insert(id, VAR, level); }
 
-M → ε
-    { M.gotostm = nextstm; }
-
-S → while M1 E do M2 S1
-    { backpatch(S1.nextlist, M1.gotostm);
-      backpatch(E.truelist, M2.gotostm);
-      S.nextlist = E.falselist;
-      gen('goto ' M1.gotostm); }
-
-S → S1 M S2
-    { backpatch(S1.nextlist, M.gotostm);
-      S.nextlist = S2.nextlist; }
+ProcDecl → procedure id ; Block ;
+  { symtab.insert(id, PROC);
+    // 声明阶段只记录符号，过程体翻译由 Block 归约时完成 }
 ```
 
-### 赋值语句的S翻译模式（栈操作）
+**语句（按产生式编号）**
 
 ```
-E' → E   { print(stack[top].val); }
+id := Expression          { emit('assign', Expression.val, _, id) }
 
-E → E1 + T   { stack[top-2].val = stack[top-2].val + stack[top].val; top = top-2; }
+call id                   { emit('call', _, _, id) }
 
-T → T1 * F   { stack[top-2].val = stack[top-2].val * stack[top].val; top = top-2; }
+read ( id )               { emit('read', _, _, id) }
 
-F → ( E )    { stack[top-2].val = stack[top-1].val; top = top-2; }
+write ( Expression )      { emit('write', Expression.val, _, _) }
 
-F → id       { stack[top].val = id.lexval; }
+if Condition then Statement
+  { Condition = (true_l, false_l)  // 归约 Condition 时已生成跳转代码
+    emit('label', _, _, true_l);
+    emit('label', _, _, false_l); }
+
+while Condition do Statement
+  { // while 被扫描时记录 loop_l, body_l, end_l
+    emit('label', _, _, body_l);
+    emit('jump', _, _, loop_l);
+    emit('label', _, _, end_l); }
 ```
+
+**条件（回填）**
+
+```
+Condition → odd Expression
+  { true_l, false_l = newlabel(), newlabel();
+    Ti = newtemp(); emit('odd', Expression.val, _, Ti);
+    emit('j#', Ti, 0, true_l); emit('jump', _, _, false_l);
+    Condition.val = (true_l, false_l); }
+
+Condition → Expression RelOp Expression
+  { true_l, false_l = newlabel(), newlabel();
+    emit('j'+RelOp, left.val, right.val, true_l);
+    emit('jump', _, _, false_l);
+    Condition.val = (true_l, false_l); }
+```
+
+**表达式**
+
+```
+Expression → [+|-] Term { + Term } | { - Term }
+  { 每次运算生成临时变量: Ti = newtemp(); emit(op, left, right, Ti); }
+
+Term → Factor { * Factor } | { / Factor }   { 同上 }
+
+Factor → id     { Factor.val = id }
+Factor → num    { Factor.val = num }
+Factor → ( E )  { Factor.val = E.val }
+```
+
+### 与 L-翻译模式的区别
+
+| 特性 | L-翻译（LL） | S-翻译（LR） |
+|------|-------------|-------------|
+| 驱动方式 | 遍历语法树 | 归约时触发 |
+| 属性传递 | 继承+综合 | 仅综合（语义栈） |
+| 控制流 | 直接生成标号 | 回填技术 |
+| 过程声明 | emit 跳转跨过过程体 | 同，LR 分析器处理嵌套 |
+| 最终指令 | `halt` | `halt` |
 
 ## 快速开始
 
@@ -441,7 +445,7 @@ pip install -r requirements.txt
 cd flex_bison_exps/task1_1_freq
 flex freq.l                  # 生成 lex.yy.c
 gcc lex.yy.c -o freq.exe     # 编译
-./freq.exe test1_1_input.txt # 运行 → 输出 A-Z 字符频率百分比
+./freq.exe < test1_1_input.txt # 运行 → 输出 A-Z 字符频率百分比
 cd ../..
 
 # === Task 1_2: 词法识别 ===
@@ -503,9 +507,9 @@ python -m src.parser_ll.ll_table
 python -m src.parser_ll.ll_parser input/correct/parser.txt
 
 # 所有语法错误用例 → 语法错误修复建议（自动保存至 output/error/）
-python -m src.parser_ll.ll_parser input/error/parser_1.txt  # 缺少分号
-python -m src.parser_ll.ll_parser input/error/parser_2.txt  # 括号不匹配
-python -m src.parser_ll.ll_parser input/error/parser_3.txt  # 关键字拼写错误
+python -m src.parser_ll.ll_parser input/error/parser_1.txt  # const 声明误用赋值号 :=
+python -m src.parser_ll.ll_parser input/error/parser_2.txt  # 括号不匹配、缺少逗号等
+python -m src.parser_ll.ll_parser input/error/parser_3.txt  # 缺少程序声明部分
 python -m src.parser_ll.ll_parser input/error/parser_4.txt  # begin/end 不匹配
 ```
 
@@ -519,9 +523,9 @@ python -m src.parser_lr.lr_table
 python -m src.parser_lr.lr_parser input/correct/parser.txt
 
 # 所有语法错误用例 → 语法错误信息（自动保存至 output/error/）
-python -m src.parser_lr.lr_parser input/error/parser_1.txt  # 缺少分号
-python -m src.parser_lr.lr_parser input/error/parser_2.txt  # 括号不匹配
-python -m src.parser_lr.lr_parser input/error/parser_3.txt  # 关键字拼写错误
+python -m src.parser_lr.lr_parser input/error/parser_1.txt  # const 声明误用赋值号 :=
+python -m src.parser_lr.lr_parser input/error/parser_2.txt  # 括号不匹配、缺少逗号等
+python -m src.parser_lr.lr_parser input/error/parser_3.txt  # 缺少程序声明部分
 python -m src.parser_lr.lr_parser input/error/parser_4.txt  # begin/end 不匹配
 ```
 
@@ -533,20 +537,20 @@ python -m src.parser_lr.lr_parser input/error/parser_4.txt  # begin/end 不匹�
 python -m src.semantic_ll.semantic_ll input/correct/semantic.txt
 
 # 语义错误输入 → 输出错误提示
-python -m src.semantic_ll.semantic_ll input/error/semantic_1.txt  # 未声明变量
-python -m src.semantic_ll.semantic_ll input/error/semantic_2.txt  # 重复声明
-python -m src.semantic_ll.semantic_ll input/error/semantic_3.txt  # 类型不匹配
-python -m src.semantic_ll.semantic_ll input/error/semantic_4.txt  # 未定义过程
+python -m src.semantic_ll.semantic_ll input/error/semantic_1.txt  # 重复声明（const 与 var 同名）
+python -m src.semantic_ll.semantic_ll input/error/semantic_2.txt  # 类型错误（过程名用作 read 参数）
+python -m src.semantic_ll.semantic_ll input/error/semantic_3.txt  # 未定义过程
+python -m src.semantic_ll.semantic_ll input/error/semantic_4.txt  # 多种语义错误
 
 # === LR 语义分析（S-翻译模式）===
 # 正确输入 → 在 LR 归约时执行语义动作，生成符号表和四元式（自动保存至 output/correct/semantic.txt）
 python -m src.semantic_lr.semantic_lr input/correct/semantic.txt
 
 # 语义错误输入 → 输出错误提示
-python -m src.semantic_lr.semantic_lr input/error/semantic_1.txt  # 未声明变量
-python -m src.semantic_lr.semantic_lr input/error/semantic_2.txt  # 重复声明
-python -m src.semantic_lr.semantic_lr input/error/semantic_3.txt  # 类型不匹配
-python -m src.semantic_lr.semantic_lr input/error/semantic_4.txt  # 未定义过程
+python -m src.semantic_lr.semantic_lr input/error/semantic_1.txt  # 重复声明（const 与 var 同名）
+python -m src.semantic_lr.semantic_lr input/error/semantic_2.txt  # 类型错误（过程名用作 read 参数）
+python -m src.semantic_lr.semantic_lr input/error/semantic_3.txt  # 未定义过程
+python -m src.semantic_lr.semantic_lr input/error/semantic_4.txt  # 多种语义错误
 ```
 
 ### 可视化工具
@@ -599,7 +603,7 @@ python -m src.semantic_ll.semantic_ll input/error/semantic_3.txt
 python -m src.semantic_ll.semantic_ll input/error/semantic_4.txt
 ```
 
-> **说明**：所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件位于 `input/correct/`，产生正确的编译输出；错误输入文件位于 `input/error/`，产生对应的错误提示信息。**控制台输出自动镜像保存至 `output/` 目录**（结构与 `input/` 一一对应），无需手动 `>` 重定向。`lr_parser` 模块额外生成 `trace.csv`、`errors.csv` 和 `parse_tree.png`。
+> **说明**：所有命令在 `PL0_Compiler/` 目录下执行。正确输入文件位于 `input/correct/`，产生正确的编译输出；错误输入文件位于 `input/error/`，产生对应的错误提示信息。**控制台输出自动镜像保存至 `output/` 目录**（结构与 `input/` 一一对应），无需手动 `>` 重定向。`lr_parser` 模块额外生成 `trace.csv` 和 `parse_tree.png`（错误输入时还会生成 `errors.csv`）。
 
 ## 环境要求
 

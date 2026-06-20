@@ -11,7 +11,7 @@
 3. 临时变量生命周期分析
 4. DOT 格式输出 (Graphviz 渲染)
 """
-
+from graphviz import Source
 from .quad_generator import QuadGenerator, QuadVM
 
 
@@ -40,6 +40,11 @@ class BasicBlock:
         succ = f" → B{','.join(map(str, self.successors))}" if self.successors else ""
         return f"B{self.block_id}({qrange}){succ}"
 
+def render_dot_to_png(dot_string, filename):
+    src = Source(dot_string)
+    src.format = "png"
+    src.render(filename, cleanup=True)
+    print(f"✅ 生成 {filename}.png")
 
 # ── 控制流图构建 ──────────────────────────────────────────────────
 
@@ -582,6 +587,15 @@ def visualize_quad_execution(quadgen, input_values=None):
 def display_all(quadgen, input_values=None):
     """打印所有可视化输出。"""
     results = visualize_quad_execution(quadgen, input_values)
+    render_dot_to_png(
+    results["cfg_dot"],
+    "out_cfg"
+    )
+
+    render_dot_to_png(
+    results["exec_dot"],
+    "out_exec_flow"
+    )
     print(results["execution_table"])
     print()
     print(results["control_flow_trace"])

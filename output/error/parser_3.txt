@@ -1,0 +1,81 @@
+========================================================================================================================
+                                                   LR 移进-归约 步骤输出                                                    
+------------------------------------------------------------------------------------------------------------------------
+ Step                    State Stack Input                                 Action Detail
+------------------------------------------------------------------------------------------------------------------------
+    0 [                           0] while id # num do begin ...            SHIFT shift to state 7
+    1 [                         0 7] id # num do begin call ...            REDUCE reduce by r39: Sign → eps  → GOTO(7, Sign) = 25
+    2 [                      0 7 25] id # num do begin call ...             SHIFT shift to state 48
+    3 [                   0 7 25 48] # num do begin call id ...            REDUCE reduce by r47: Factor → id  → GOTO(25, Factor) = 50
+    4 [                   0 7 25 50] # num do begin call id ...            REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
+    5 [                0 7 25 50 76] # num do begin call id ...            REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
+    6 [                   0 7 25 52] # num do begin call id ...            REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
+    7 [                0 7 25 52 78] # num do begin call id ...            REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(7, Expression) = 30
+    8 [                      0 7 30] # num do begin call id ...             SHIFT shift to state 55
+    9 [                   0 7 30 55] num do begin call id ; ...            REDUCE reduce by r31: RelOp → #  → GOTO(30, RelOp) = 57
+   10 [                   0 7 30 57] num do begin call id ; ...            REDUCE reduce by r39: Sign → eps  → GOTO(57, Sign) = 25
+   11 [                0 7 30 57 25] num do begin call id ; ...             SHIFT shift to state 49
+   12 [             0 7 30 57 25 49] do begin call id ; write ...          REDUCE reduce by r48: Factor → num  → GOTO(25, Factor) = 50
+   13 [             0 7 30 57 25 50] do begin call id ; write ...          REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
+   14 [          0 7 30 57 25 50 76] do begin call id ; write ...          REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
+   15 [             0 7 30 57 25 52] do begin call id ; write ...          REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
+   16 [          0 7 30 57 25 52 78] do begin call id ; write ...          REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(57, Expression) = 82
+   17 [                0 7 30 57 82] do begin call id ; write ...          REDUCE reduce by r29: Condition → Expression RelOp Expression  → GOTO(7, Condition) = 31
+   18 [                      0 7 31] do begin call id ; write ...           SHIFT shift to state 62
+   19 [                   0 7 31 62] begin call id ; write ( ...            SHIFT shift to state 5
+   20 [                 0 7 31 62 5] call id ; write ( num ...              SHIFT shift to state 3
+   21 [               0 7 31 62 5 3] id ; write ( num * ...                 SHIFT shift to state 20
+   22 [            0 7 31 62 5 3 20] ; write ( num * id ...                REDUCE reduce by r17: Statement → call id  → GOTO(5, Statement) = 24
+   23 [              0 7 31 62 5 24] ; write ( num * id ...                 SHIFT shift to state 47
+   24 [           0 7 31 62 5 24 47] write ( num * id ) ...                 SHIFT shift to state 9
+   25 [         0 7 31 62 5 24 47 9] ( num * id ) ; ...                     SHIFT shift to state 33
+   26 [     ...7 31 62 5 24 47 9 33] num * id ) ; read ...                 REDUCE reduce by r39: Sign → eps  → GOTO(33, Sign) = 25
+   27 [    ...31 62 5 24 47 9 33 25] num * id ) ; read ...                  SHIFT shift to state 49
+   28 [    ...62 5 24 47 9 33 25 49] * id ) ; read ( ...                   REDUCE reduce by r48: Factor → num  → GOTO(25, Factor) = 50
+   29 [    ...62 5 24 47 9 33 25 50] * id ) ; read ( ...                    SHIFT shift to state 74
+   30 [    ...5 24 47 9 33 25 50 74] id ) ; read ( id ...                   SHIFT shift to state 48
+   31 [   ...24 47 9 33 25 50 74 48] ) ; read ( id ) ...                   REDUCE reduce by r47: Factor → id  → GOTO(74, Factor) = 93
+   32 [   ...24 47 9 33 25 50 74 93] ) ; read ( id ) ...                   REDUCE reduce by r46: FactorList → eps  → GOTO(93, FactorList) = 102
+   33 [  ...47 9 33 25 50 74 93 102] ) ; read ( id ) ...                   REDUCE reduce by r44: FactorList → * Factor FactorList  → GOTO(50, FactorList) = 76
+   34 [    ...5 24 47 9 33 25 50 76] ) ; read ( id ) ...                   REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
+   35 [    ...62 5 24 47 9 33 25 52] ) ; read ( id ) ...                   REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
+   36 [    ...5 24 47 9 33 25 52 78] ) ; read ( id ) ...                   REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(33, Expression) = 65
+   37 [    ...31 62 5 24 47 9 33 65] ) ; read ( id ) ...                    SHIFT shift to state 86
+   38 [    ...62 5 24 47 9 33 65 86] ; read ( id ) ; ...                   REDUCE reduce by r22: Statement → write ( Expression )  → GOTO(47, Statement) = 24
+   39 [        0 7 31 62 5 24 47 24] ; read ( id ) ; ...                    SHIFT shift to state 47
+   40 [    ...7 31 62 5 24 47 24 47] read ( id ) ; end ...                  SHIFT shift to state 11
+   41 [   ...31 62 5 24 47 24 47 11] ( id ) ; end end ...                   SHIFT shift to state 35
+   42 [   ...62 5 24 47 24 47 11 35] id ) ; end end . ...                   SHIFT shift to state 66
+   43 [   ...5 24 47 24 47 11 35 66] ) ; end end . $                        SHIFT shift to state 87
+   44 [  ...24 47 24 47 11 35 66 87] ; end end . $                         REDUCE reduce by r21: Statement → read ( id )  → GOTO(47, Statement) = 24
+   45 [   ...31 62 5 24 47 24 47 24] ; end end . $                          SHIFT shift to state 47
+   46 [   ...62 5 24 47 24 47 24 47] end end . $                           REDUCE reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73
+   47 [   ...5 24 47 24 47 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
+   48 [   ...31 62 5 24 47 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
+   49 [        0 7 31 62 5 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
+   50 [              0 7 31 62 5 23] end end . $                            SHIFT shift to state 46
+   51 [           0 7 31 62 5 23 46] end . $                               REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(62, Statement) = 83
+   52 [                0 7 31 62 83] end . $                               REDUCE reduce by r20: Statement → while Condition do Statement  → GOTO(0, Statement) = 17
+   53 [                        0 17] end . $                                ERROR No action for end
+========================================================================================================================
+  Total steps: 54
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on begin: shift → 5 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on read: shift → 11 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on id: shift → 2 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on while: shift → 7 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on call: shift → 3 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on if: shift → 6 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on write: shift → 9 vs reduce r14
+  [ERROR] Warning (grammar): State 45: reduce/reduce conflict on end: r23 vs r27
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on begin: shift → 5 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on read: shift → 11 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on id: shift → 2 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on while: shift → 7 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on call: shift → 3 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on if: shift → 6 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on write: shift → 9 vs reduce r14
+  [ERROR] Warning (grammar): State 92: reduce/reduce conflict on end: r24 vs r26
+  [ERROR] Syntax error at line 7, col 4: unexpected 'end' (end), expected one of: ., ;
+
+Syntax tree:
+(null tree)

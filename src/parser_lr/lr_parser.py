@@ -4,7 +4,7 @@
 Features:
 - Shift-reduce parsing using SLR(1) ACTION/GOTO tables
 - Concrete syntax tree construction
-- Panic-mode error recovery
+- Panic-mode error recovery (Simplified to abort on fatal errors to prevent infinite loops)
 - Graphviz DOT visualization (text + rendered image)
 - Export trace and errors to CSV in output/correct or output/error
 """
@@ -138,19 +138,12 @@ class LRParser:
                     f"unexpected '{token_name}' ({tok.value}), "
                     f"expected one of: {expected_names or 'EOF'}"
                 )
-                recovered = False
-                while len(stack) > 1:
-                    stack.pop()
-                    if sem_stack:
-                        sem_stack.pop()
-                    new_state = stack[-1]
-                    if tok.type in self.action.get(new_state, {}):
-                        recovered = True
-                        break
-                if not recovered:
-                    pos += 1
-                step_num += 1
-                continue
+                
+                # 【修复核心】：遇到无法处理的语法错误时，记录错误后直接终止解析。
+                # 避免原有的 panic-mode 恢复逻辑在连续错误时陷入无限循环卡死。
+                if trace:
+                    return None, self.errors, trace_steps
+                return None, self.errors
 
             action_type = action_entry[0]
 
@@ -334,6 +327,8 @@ def render_tree(tree: SyntaxTreeNode, filepath="parse_tree"):
         tree: root of the SyntaxTreeNode tree
         filepath: output file path without extension
     """
+    if tree is None:
+        return
     try:
         import graphviz
         dot_source = tree_to_dot(tree)
@@ -412,11 +407,12 @@ def save_errors_csv(errors, filepath, delimiter=','):
 
 if __name__ == '__main__':
     import sys
+    # 标准入口 + Windows 编码修正
     if sys.platform == 'win32':
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
     from ..utils.output_manager import resolve_output_path, tee_output
-
+    # 获取源代码：文件 或 内置测试
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
             source = f.read()
@@ -427,12 +423,12 @@ if __name__ == '__main__':
         print(f"Using built-in test:\n---\n{source}\n---\n")
         output_path = None
 
-    # Parse with trace
+    # 创建词法分析器与 LR 语法分析器，并执行带追踪的解析
     lexer = Lexer(source)
     parser = LRParser(lexer)
     tree, errors, trace_steps = parser.parse_with_trace()
 
-    # Print trace (mirrored to file via tee)
+    # 输出追踪记录和错误信息（屏幕 + 文件）
     with tee_output(output_path):
         print(format_lr_trace(trace_steps))
 

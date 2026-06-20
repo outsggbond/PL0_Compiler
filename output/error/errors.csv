@@ -1,0 +1,18 @@
+﻿Index,Message
+1,Warning (grammar): State 0: shift/reduce conflict on begin: shift → 5 vs reduce r14
+2,Warning (grammar): State 0: shift/reduce conflict on if: shift → 6 vs reduce r14
+3,Warning (grammar): State 0: shift/reduce conflict on read: shift → 11 vs reduce r14
+4,Warning (grammar): State 0: shift/reduce conflict on id: shift → 2 vs reduce r14
+5,Warning (grammar): State 0: shift/reduce conflict on write: shift → 9 vs reduce r14
+6,Warning (grammar): State 0: shift/reduce conflict on call: shift → 3 vs reduce r14
+7,Warning (grammar): State 0: shift/reduce conflict on while: shift → 7 vs reduce r14
+8,Warning (grammar): State 45: reduce/reduce conflict on end: r23 vs r27
+9,Warning (grammar): State 69: shift/reduce conflict on begin: shift → 5 vs reduce r14
+10,Warning (grammar): State 69: shift/reduce conflict on if: shift → 6 vs reduce r14
+11,Warning (grammar): State 69: shift/reduce conflict on read: shift → 11 vs reduce r14
+12,Warning (grammar): State 69: shift/reduce conflict on id: shift → 2 vs reduce r14
+13,Warning (grammar): State 69: shift/reduce conflict on write: shift → 9 vs reduce r14
+14,Warning (grammar): State 69: shift/reduce conflict on call: shift → 3 vs reduce r14
+15,Warning (grammar): State 69: shift/reduce conflict on while: shift → 7 vs reduce r14
+16,Warning (grammar): State 92: reduce/reduce conflict on end: r24 vs r26
+17,"Syntax error at line 19, col 5: unexpected '.' (.), expected one of: end, ;"

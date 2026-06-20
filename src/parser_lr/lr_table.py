@@ -341,14 +341,22 @@ def plot_slr_table(action, goto, filename="slr_table.png"):
 
 
 # ============================================================
+# 用来生成并输出 SLR(1) 分析表，同时根据是否存在冲突将结果保存到不同的子目录。
 if __name__ == '__main__':
     import sys
     sys.path.insert(0, '..')
     from src.parser_ll.first_follow import compute_first, compute_follow
 
+    # ② 计算 FIRST / FOLLOW 并补充 FOLLOW 集合
     first = compute_first()
     follow = compute_follow(first)
+    """
+    自动计算的 compute_follow 可能不包含 LR 分析需要的某些非终结符的 FOLLOW，
+    或者因为文法改写（如引入 ConstRest 等辅助符号）导致其 FOLLOW 需要手动明确。
 
+    这些赋值直接给出了这些非终结符允许跟在后面的终结符集合，
+    保证 SLR 分析表构建时归约动作的前瞻判断正确。
+    """
     # Add FOLLOW for LR-specific non-terminals
     follow["S'"] = {TT.EOF}
     follow['ConstRest'] = {TT.SEMICOLON}
@@ -359,18 +367,21 @@ if __name__ == '__main__':
     follow['FactorList'] = follow['TermList'].copy()
     follow['FactorList'] |= {TT.PLUS, TT.MINUS}
     follow['Expression'] = follow.get('Expression', set()) | {TT.RPAREN, TT.SEMICOLON, TT.END, TT.THEN, TT.DO, TT.PERIOD}
-
+    #  构建 SLR(1) 分析表
+    # 构造 LR(0) 项目集规范族（所有状态）和状态间的转移
     C, transitions = build_canonical_collection()
+    # 使用这些状态和上一步的 FOLLOW 集合，生成 action 表、goto 表，
+    # 并记录发现的移进‑归约冲突或归约‑归约冲突。
     action, goto, conflicts = build_slr_table(C, transitions, follow)
 
-    # Determine output directory
+    # 确定输出目录
     base_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'output')
     subdir = 'error' if conflicts else 'correct'
     out_dir = os.path.join(base_dir, subdir)
     os.makedirs(out_dir, exist_ok=True)
     slr_txt_path = os.path.join(out_dir, 'slr_table.txt')
 
-    # Tee console output (conflicts + table) to file
+    # 输出 SLR 表信息（屏幕+文件）
     from ..utils.output_manager import tee_output
     with tee_output(slr_txt_path):
         print(f"Canonical collection: {len(C)} states")

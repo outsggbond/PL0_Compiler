@@ -116,177 +116,38 @@
   110 [    ...62 5 24 47 9 33 65 86] ; read ( id ) ; ...                   REDUCE reduce by r22: Statement → write ( Expression )  → GOTO(47, Statement) = 24
   111 [    ...47 7 31 62 5 24 47 24] ; read ( id ) ; ...                    SHIFT shift to state 47
   112 [    ...7 31 62 5 24 47 24 47] read ( id ) ; end ...                  SHIFT shift to state 11
-  113 [   ...31 62 5 24 47 24 47 11] ( id ) ; end end ...                   SHIFT shift to state 35
-  114 [   ...62 5 24 47 24 47 11 35] id ) ; end end . ...                   SHIFT shift to state 66
-  115 [   ...5 24 47 24 47 11 35 66] ) ; end end . $                        SHIFT shift to state 87
-  116 [  ...24 47 24 47 11 35 66 87] ; end end . $                         REDUCE reduce by r21: Statement → read ( id )  → GOTO(47, Statement) = 24
-  117 [   ...31 62 5 24 47 24 47 24] ; end end . $                          SHIFT shift to state 47
-  118 [   ...62 5 24 47 24 47 24 47] end end . $                           REDUCE reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73
-  119 [   ...5 24 47 24 47 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
-  120 [   ...31 62 5 24 47 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
-  121 [    ...47 7 31 62 5 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
-  122 [     ...5 24 47 7 31 62 5 23] end end . $                            SHIFT shift to state 46
-  123 [    ...24 47 7 31 62 5 23 46] end . $                               REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(62, Statement) = 83
-  124 [    ...67 5 24 47 7 31 62 83] end . $                               REDUCE reduce by r20: Statement → while Condition do Statement  → GOTO(47, Statement) = 24
-  125 [       0 13 36 67 5 24 47 24] end . $                               REDUCE reduce by r23: StmtList → Statement  → GOTO(47, StmtList) = 73
-  126 [       0 13 36 67 5 24 47 73] end . $                               REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
-  127 [             0 13 36 67 5 23] end . $                                SHIFT shift to state 46
-  128 [          0 13 36 67 5 23 46] . $                                   REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(67, Statement) = 88
-  129 [               0 13 36 67 88] . $                                   REDUCE reduce by r2: Block → ConstDecl VarDecl ProcDecls Statement  → GOTO(0, Block) = 10
-  130 [                        0 10] . $                                    SHIFT shift to state 34
-  131 [                     0 10 34] $                                     REDUCE reduce by r1: Program → Block .  → GOTO(0, Program) = 12
-  132 [                        0 12] $                                     ACCEPT accept
+  113 [   ...31 62 5 24 47 24 47 11] ( id ) ; end . ...                     SHIFT shift to state 35
+  114 [   ...62 5 24 47 24 47 11 35] id ) ; end . $                         SHIFT shift to state 66
+  115 [   ...5 24 47 24 47 11 35 66] ) ; end . $                            SHIFT shift to state 87
+  116 [  ...24 47 24 47 11 35 66 87] ; end . $                             REDUCE reduce by r21: Statement → read ( id )  → GOTO(47, Statement) = 24
+  117 [   ...31 62 5 24 47 24 47 24] ; end . $                              SHIFT shift to state 47
+  118 [   ...62 5 24 47 24 47 24 47] end . $                               REDUCE reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73
+  119 [   ...5 24 47 24 47 24 47 73] end . $                               REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
+  120 [   ...31 62 5 24 47 24 47 73] end . $                               REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
+  121 [    ...47 7 31 62 5 24 47 73] end . $                               REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
+  122 [     ...5 24 47 7 31 62 5 23] end . $                                SHIFT shift to state 46
+  123 [    ...24 47 7 31 62 5 23 46] . $                                   REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(62, Statement) = 83
+  124 [    ...67 5 24 47 7 31 62 83] . $                                   REDUCE reduce by r20: Statement → while Condition do Statement  → GOTO(47, Statement) = 24
+  125 [       0 13 36 67 5 24 47 24] . $                                    ERROR No action for .
 ========================================================================================================================
-  Total steps: 133
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on while: shift → 7 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on read: shift → 11 vs reduce r14
+  Total steps: 126
   [ERROR] Warning (grammar): State 0: shift/reduce conflict on begin: shift → 5 vs reduce r14
   [ERROR] Warning (grammar): State 0: shift/reduce conflict on if: shift → 6 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on read: shift → 11 vs reduce r14
   [ERROR] Warning (grammar): State 0: shift/reduce conflict on id: shift → 2 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on call: shift → 3 vs reduce r14
   [ERROR] Warning (grammar): State 0: shift/reduce conflict on write: shift → 9 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on call: shift → 3 vs reduce r14
+  [ERROR] Warning (grammar): State 0: shift/reduce conflict on while: shift → 7 vs reduce r14
   [ERROR] Warning (grammar): State 45: reduce/reduce conflict on end: r23 vs r27
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on while: shift → 7 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on read: shift → 11 vs reduce r14
   [ERROR] Warning (grammar): State 69: shift/reduce conflict on begin: shift → 5 vs reduce r14
   [ERROR] Warning (grammar): State 69: shift/reduce conflict on if: shift → 6 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on read: shift → 11 vs reduce r14
   [ERROR] Warning (grammar): State 69: shift/reduce conflict on id: shift → 2 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on call: shift → 3 vs reduce r14
   [ERROR] Warning (grammar): State 69: shift/reduce conflict on write: shift → 9 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on call: shift → 3 vs reduce r14
+  [ERROR] Warning (grammar): State 69: shift/reduce conflict on while: shift → 7 vs reduce r14
   [ERROR] Warning (grammar): State 92: reduce/reduce conflict on end: r24 vs r26
+  [ERROR] Syntax error at line 19, col 5: unexpected '.' (.), expected one of: end, ;
 
 Syntax tree:
-Program
-  Block
-    ConstDecl
-      const [const]
-      id [a]
-      = [=]
-      num [10]
-      ConstRest
-      ; [;]
-    VarDecl
-      var [var]
-      id [b]
-      VarRest
-        , [,]
-        id [c]
-        VarRest
-      ; [;]
-    ProcDecls
-      ProcDecl
-        procedure [procedure]
-        id [p]
-        ; [;]
-        Block
-          Statement
-            if [if]
-            Condition
-              Expression
-                Sign
-                Term
-                  Factor
-                    id [a]
-                  FactorList
-                TermList
-              RelOp
-                <= [<=]
-              Expression
-                Sign
-                Term
-                  Factor
-                    num [10]
-                  FactorList
-                TermList
-            then [then]
-            Statement
-              begin [begin]
-              StmtList
-                Statement
-                  id [c]
-                  := [:=]
-                  Expression
-                    Sign
-                    Term
-                      Factor
-                        id [b]
-                      FactorList
-                    TermList
-                      + [+]
-                      Term
-                        Factor
-                          id [a]
-                        FactorList
-                      TermList
-                ; [;]
-                StmtList
-              end [end]
-        ; [;]
-      ProcDecls
-    Statement
-      begin [begin]
-      StmtList
-        Statement
-          read [read]
-          ( [(]
-          id [b]
-          ) [)]
-        ; [;]
-        StmtList
-          Statement
-            while [while]
-            Condition
-              Expression
-                Sign
-                Term
-                  Factor
-                    id [b]
-                  FactorList
-                TermList
-              RelOp
-                # [#]
-              Expression
-                Sign
-                Term
-                  Factor
-                    num
-                  FactorList
-                TermList
-            do [do]
-            Statement
-              begin [begin]
-              StmtList
-                Statement
-                  call [call]
-                  id [p]
-                ; [;]
-                StmtList
-                  Statement
-                    write [write]
-                    ( [(]
-                    Expression
-                      Sign
-                      Term
-                        Factor
-                          num [2]
-                        FactorList
-                          * [*]
-                          Factor
-                            id [c]
-                          FactorList
-                      TermList
-                    ) [)]
-                  ; [;]
-                  StmtList
-                    Statement
-                      read [read]
-                      ( [(]
-                      id [b]
-                      ) [)]
-                    ; [;]
-                    StmtList
-              end [end]
-      end [end]
-  . [.]
-Trace steps saved as CSV: K:\PL0_Compiler\PL0_Compiler\src\parser_lr\..\..\output\correct\trace.csv
-Could not render syntax tree: failed to execute WindowsPath('dot'), make sure the Graphviz executables are on your systems' PATH
+(null tree)

@@ -1,290 +1,1233 @@
-========================================================================================================================
-                                                   LR 移进-归约 步骤输出                                                    
-------------------------------------------------------------------------------------------------------------------------
- Step                    State Stack Input                                 Action Detail
-------------------------------------------------------------------------------------------------------------------------
-    0 [                           0] const id = num ; var ...               SHIFT shift to state 4
-    1 [                         0 4] id = num ; var id ...                  SHIFT shift to state 21
-    2 [                      0 4 21] = num ; var id , ...                   SHIFT shift to state 43
-    3 [                   0 4 21 43] num ; var id , id ...                  SHIFT shift to state 70
-    4 [                0 4 21 43 70] ; var id , id ; ...                   REDUCE reduce by r9: ConstRest → eps  → GOTO(70, ConstRest) = 90
-    5 [             0 4 21 43 70 90] ; var id , id ; ...                    SHIFT shift to state 100
-    6 [         0 4 21 43 70 90 100] var id , id ; procedure ...           REDUCE reduce by r7: ConstDecl → const id = num ConstRest ;  → GOTO(0, ConstDecl) = 13
-    7 [                        0 13] var id , id ; procedure ...            SHIFT shift to state 8
-    8 [                      0 13 8] id , id ; procedure id ...             SHIFT shift to state 32
-    9 [                   0 13 8 32] , id ; procedure id ; ...              SHIFT shift to state 64
-   10 [                0 13 8 32 64] id ; procedure id ; if ...             SHIFT shift to state 85
-   11 [             0 13 8 32 64 85] ; procedure id ; if id ...            REDUCE reduce by r12: VarRest → eps  → GOTO(85, VarRest) = 98
-   12 [          0 13 8 32 64 85 98] ; procedure id ; if id ...            REDUCE reduce by r11: VarRest → , id VarRest  → GOTO(32, VarRest) = 63
-   13 [                0 13 8 32 63] ; procedure id ; if id ...             SHIFT shift to state 84
-   14 [             0 13 8 32 63 84] procedure id ; if id <= ...           REDUCE reduce by r10: VarDecl → var id VarRest ;  → GOTO(13, VarDecl) = 36
-   15 [                     0 13 36] procedure id ; if id <= ...            SHIFT shift to state 15
-   16 [                  0 13 36 15] id ; if id <= num ...                  SHIFT shift to state 39
-   17 [               0 13 36 15 39] ; if id <= num then ...                SHIFT shift to state 69
-   18 [            0 13 36 15 39 69] if id <= num then begin ...            SHIFT shift to state 6
-   19 [          0 13 36 15 39 69 6] id <= num then begin id ...           REDUCE reduce by r39: Sign → eps  → GOTO(6, Sign) = 25
-   20 [       0 13 36 15 39 69 6 25] id <= num then begin id ...            SHIFT shift to state 48
-   21 [   ...13 36 15 39 69 6 25 48] <= num then begin id := ...           REDUCE reduce by r47: Factor → id  → GOTO(25, Factor) = 50
-   22 [   ...13 36 15 39 69 6 25 50] <= num then begin id := ...           REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
-   23 [   ...36 15 39 69 6 25 50 76] <= num then begin id := ...           REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
-   24 [   ...13 36 15 39 69 6 25 52] <= num then begin id := ...           REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
-   25 [   ...36 15 39 69 6 25 52 78] <= num then begin id := ...           REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(6, Expression) = 30
-   26 [       0 13 36 15 39 69 6 30] <= num then begin id := ...            SHIFT shift to state 58
-   27 [   ...13 36 15 39 69 6 30 58] num then begin id := id ...           REDUCE reduce by r33: RelOp → <=  → GOTO(30, RelOp) = 57
-   28 [   ...13 36 15 39 69 6 30 57] num then begin id := id ...           REDUCE reduce by r39: Sign → eps  → GOTO(57, Sign) = 25
-   29 [   ...36 15 39 69 6 30 57 25] num then begin id := id ...            SHIFT shift to state 49
-   30 [   ...15 39 69 6 30 57 25 49] then begin id := id + ...             REDUCE reduce by r48: Factor → num  → GOTO(25, Factor) = 50
-   31 [   ...15 39 69 6 30 57 25 50] then begin id := id + ...             REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
-   32 [   ...39 69 6 30 57 25 50 76] then begin id := id + ...             REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
-   33 [   ...15 39 69 6 30 57 25 52] then begin id := id + ...             REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
-   34 [   ...39 69 6 30 57 25 52 78] then begin id := id + ...             REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(57, Expression) = 82
-   35 [   ...36 15 39 69 6 30 57 82] then begin id := id + ...             REDUCE reduce by r29: Condition → Expression RelOp Expression  → GOTO(6, Condition) = 28
-   36 [       0 13 36 15 39 69 6 28] then begin id := id + ...              SHIFT shift to state 53
-   37 [   ...13 36 15 39 69 6 28 53] begin id := id + id ...                SHIFT shift to state 5
-   38 [    ...36 15 39 69 6 28 53 5] id := id + id ; ...                    SHIFT shift to state 2
-   39 [     ...15 39 69 6 28 53 5 2] := id + id ; end ...                   SHIFT shift to state 19
-   40 [     ...39 69 6 28 53 5 2 19] id + id ; end ; ...                   REDUCE reduce by r39: Sign → eps  → GOTO(19, Sign) = 25
-   41 [     ...69 6 28 53 5 2 19 25] id + id ; end ; ...                    SHIFT shift to state 48
-   42 [     ...6 28 53 5 2 19 25 48] + id ; end ; begin ...                REDUCE reduce by r47: Factor → id  → GOTO(25, Factor) = 50
-   43 [     ...6 28 53 5 2 19 25 50] + id ; end ; begin ...                REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
-   44 [    ...28 53 5 2 19 25 50 76] + id ; end ; begin ...                REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
-   45 [     ...6 28 53 5 2 19 25 52] + id ; end ; begin ...                 SHIFT shift to state 79
-   46 [    ...28 53 5 2 19 25 52 79] id ; end ; begin read ...              SHIFT shift to state 48
-   47 [    ...53 5 2 19 25 52 79 48] ; end ; begin read ( ...              REDUCE reduce by r47: Factor → id  → GOTO(79, Factor) = 50
-   48 [    ...53 5 2 19 25 52 79 50] ; end ; begin read ( ...              REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
-   49 [    ...5 2 19 25 52 79 50 76] ; end ; begin read ( ...              REDUCE reduce by r43: Term → Factor FactorList  → GOTO(79, Term) = 96
-   50 [    ...53 5 2 19 25 52 79 96] ; end ; begin read ( ...              REDUCE reduce by r42: TermList → eps  → GOTO(96, TermList) = 104
-   51 [   ...5 2 19 25 52 79 96 104] ; end ; begin read ( ...              REDUCE reduce by r40: TermList → + Term TermList  → GOTO(52, TermList) = 78
-   52 [    ...28 53 5 2 19 25 52 78] ; end ; begin read ( ...              REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(19, Expression) = 42
-   53 [     ...69 6 28 53 5 2 19 42] ; end ; begin read ( ...              REDUCE reduce by r16: Statement → id := Expression  → GOTO(5, Statement) = 24
-   54 [    ...15 39 69 6 28 53 5 24] ; end ; begin read ( ...               SHIFT shift to state 47
-   55 [    ...39 69 6 28 53 5 24 47] end ; begin read ( id ...             REDUCE reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73
-   56 [    ...69 6 28 53 5 24 47 73] end ; begin read ( id ...             REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
-   57 [    ...15 39 69 6 28 53 5 23] end ; begin read ( id ...              SHIFT shift to state 46
-   58 [    ...39 69 6 28 53 5 23 46] ; begin read ( id ) ...               REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(53, Statement) = 81
-   59 [   ...36 15 39 69 6 28 53 81] ; begin read ( id ) ...               REDUCE reduce by r19: Statement → if Condition then Statement  → GOTO(69, Statement) = 17
-   60 [         0 13 36 15 39 69 17] ; begin read ( id ) ...               REDUCE reduce by r6: Block → Statement  → GOTO(69, Block) = 89
-   61 [         0 13 36 15 39 69 89] ; begin read ( id ) ...                SHIFT shift to state 99
-   62 [      0 13 36 15 39 69 89 99] begin read ( id ) ; ...               REDUCE reduce by r15: ProcDecl → procedure id ; Block ;  → GOTO(36, ProcDecl) = 14
-   63 [                  0 13 36 14] begin read ( id ) ; ...               REDUCE reduce by r14: ProcDecls → eps  → GOTO(14, ProcDecls) = 38
-   64 [               0 13 36 14 38] begin read ( id ) ; ...               REDUCE reduce by r13: ProcDecls → ProcDecl ProcDecls  → GOTO(36, ProcDecls) = 67
-   65 [                  0 13 36 67] begin read ( id ) ; ...                SHIFT shift to state 5
-   66 [                0 13 36 67 5] read ( id ) ; while ...                SHIFT shift to state 11
-   67 [             0 13 36 67 5 11] ( id ) ; while id ...                  SHIFT shift to state 35
-   68 [          0 13 36 67 5 11 35] id ) ; while id # ...                  SHIFT shift to state 66
-   69 [       0 13 36 67 5 11 35 66] ) ; while id # num ...                 SHIFT shift to state 87
-   70 [   ...13 36 67 5 11 35 66 87] ; while id # num do ...               REDUCE reduce by r21: Statement → read ( id )  → GOTO(5, Statement) = 24
-   71 [             0 13 36 67 5 24] ; while id # num do ...                SHIFT shift to state 47
-   72 [          0 13 36 67 5 24 47] while id # num do begin ...            SHIFT shift to state 7
-   73 [        0 13 36 67 5 24 47 7] id # num do begin call ...            REDUCE reduce by r39: Sign → eps  → GOTO(7, Sign) = 25
-   74 [    ...13 36 67 5 24 47 7 25] id # num do begin call ...             SHIFT shift to state 48
-   75 [    ...36 67 5 24 47 7 25 48] # num do begin call id ...            REDUCE reduce by r47: Factor → id  → GOTO(25, Factor) = 50
-   76 [    ...36 67 5 24 47 7 25 50] # num do begin call id ...            REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
-   77 [    ...67 5 24 47 7 25 50 76] # num do begin call id ...            REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
-   78 [    ...36 67 5 24 47 7 25 52] # num do begin call id ...            REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
-   79 [    ...67 5 24 47 7 25 52 78] # num do begin call id ...            REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(7, Expression) = 30
-   80 [    ...13 36 67 5 24 47 7 30] # num do begin call id ...             SHIFT shift to state 55
-   81 [    ...36 67 5 24 47 7 30 55] num do begin call id ; ...            REDUCE reduce by r31: RelOp → #  → GOTO(30, RelOp) = 57
-   82 [    ...36 67 5 24 47 7 30 57] num do begin call id ; ...            REDUCE reduce by r39: Sign → eps  → GOTO(57, Sign) = 25
-   83 [    ...67 5 24 47 7 30 57 25] num do begin call id ; ...             SHIFT shift to state 49
-   84 [    ...5 24 47 7 30 57 25 49] do begin call id ; write ...          REDUCE reduce by r48: Factor → num  → GOTO(25, Factor) = 50
-   85 [    ...5 24 47 7 30 57 25 50] do begin call id ; write ...          REDUCE reduce by r46: FactorList → eps  → GOTO(50, FactorList) = 76
-   86 [   ...24 47 7 30 57 25 50 76] do begin call id ; write ...          REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
-   87 [    ...5 24 47 7 30 57 25 52] do begin call id ; write ...          REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
-   88 [   ...24 47 7 30 57 25 52 78] do begin call id ; write ...          REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(57, Expression) = 82
-   89 [    ...67 5 24 47 7 30 57 82] do begin call id ; write ...          REDUCE reduce by r29: Condition → Expression RelOp Expression  → GOTO(7, Condition) = 31
-   90 [    ...13 36 67 5 24 47 7 31] do begin call id ; write ...           SHIFT shift to state 62
-   91 [    ...36 67 5 24 47 7 31 62] begin call id ; write ( ...            SHIFT shift to state 5
-   92 [     ...67 5 24 47 7 31 62 5] call id ; write ( num ...              SHIFT shift to state 3
-   93 [      ...5 24 47 7 31 62 5 3] id ; write ( num * ...                 SHIFT shift to state 20
-   94 [     ...24 47 7 31 62 5 3 20] ; write ( num * id ...                REDUCE reduce by r17: Statement → call id  → GOTO(5, Statement) = 24
-   95 [     ...5 24 47 7 31 62 5 24] ; write ( num * id ...                 SHIFT shift to state 47
-   96 [    ...24 47 7 31 62 5 24 47] write ( num * id ) ...                 SHIFT shift to state 9
-   97 [     ...47 7 31 62 5 24 47 9] ( num * id ) ; ...                     SHIFT shift to state 33
-   98 [     ...7 31 62 5 24 47 9 33] num * id ) ; read ...                 REDUCE reduce by r39: Sign → eps  → GOTO(33, Sign) = 25
-   99 [    ...31 62 5 24 47 9 33 25] num * id ) ; read ...                  SHIFT shift to state 49
-  100 [    ...62 5 24 47 9 33 25 49] * id ) ; read ( ...                   REDUCE reduce by r48: Factor → num  → GOTO(25, Factor) = 50
-  101 [    ...62 5 24 47 9 33 25 50] * id ) ; read ( ...                    SHIFT shift to state 74
-  102 [    ...5 24 47 9 33 25 50 74] id ) ; read ( id ...                   SHIFT shift to state 48
-  103 [   ...24 47 9 33 25 50 74 48] ) ; read ( id ) ...                   REDUCE reduce by r47: Factor → id  → GOTO(74, Factor) = 93
-  104 [   ...24 47 9 33 25 50 74 93] ) ; read ( id ) ...                   REDUCE reduce by r46: FactorList → eps  → GOTO(93, FactorList) = 102
-  105 [  ...47 9 33 25 50 74 93 102] ) ; read ( id ) ...                   REDUCE reduce by r44: FactorList → * Factor FactorList  → GOTO(50, FactorList) = 76
-  106 [    ...5 24 47 9 33 25 50 76] ) ; read ( id ) ...                   REDUCE reduce by r43: Term → Factor FactorList  → GOTO(25, Term) = 52
-  107 [    ...62 5 24 47 9 33 25 52] ) ; read ( id ) ...                   REDUCE reduce by r42: TermList → eps  → GOTO(52, TermList) = 78
-  108 [    ...5 24 47 9 33 25 52 78] ) ; read ( id ) ...                   REDUCE reduce by r36: Expression → Sign Term TermList  → GOTO(33, Expression) = 65
-  109 [    ...31 62 5 24 47 9 33 65] ) ; read ( id ) ...                    SHIFT shift to state 86
-  110 [    ...62 5 24 47 9 33 65 86] ; read ( id ) ; ...                   REDUCE reduce by r22: Statement → write ( Expression )  → GOTO(47, Statement) = 24
-  111 [    ...47 7 31 62 5 24 47 24] ; read ( id ) ; ...                    SHIFT shift to state 47
-  112 [    ...7 31 62 5 24 47 24 47] read ( id ) ; end ...                  SHIFT shift to state 11
-  113 [   ...31 62 5 24 47 24 47 11] ( id ) ; end end ...                   SHIFT shift to state 35
-  114 [   ...62 5 24 47 24 47 11 35] id ) ; end end . ...                   SHIFT shift to state 66
-  115 [   ...5 24 47 24 47 11 35 66] ) ; end end . $                        SHIFT shift to state 87
-  116 [  ...24 47 24 47 11 35 66 87] ; end end . $                         REDUCE reduce by r21: Statement → read ( id )  → GOTO(47, Statement) = 24
-  117 [   ...31 62 5 24 47 24 47 24] ; end end . $                          SHIFT shift to state 47
-  118 [   ...62 5 24 47 24 47 24 47] end end . $                           REDUCE reduce by r27: StmtList → eps  → GOTO(47, StmtList) = 73
-  119 [   ...5 24 47 24 47 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
-  120 [   ...31 62 5 24 47 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(47, StmtList) = 73
-  121 [    ...47 7 31 62 5 24 47 73] end end . $                           REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
-  122 [     ...5 24 47 7 31 62 5 23] end end . $                            SHIFT shift to state 46
-  123 [    ...24 47 7 31 62 5 23 46] end . $                               REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(62, Statement) = 83
-  124 [    ...67 5 24 47 7 31 62 83] end . $                               REDUCE reduce by r20: Statement → while Condition do Statement  → GOTO(47, Statement) = 24
-  125 [       0 13 36 67 5 24 47 24] end . $                               REDUCE reduce by r23: StmtList → Statement  → GOTO(47, StmtList) = 73
-  126 [       0 13 36 67 5 24 47 73] end . $                               REDUCE reduce by r24: StmtList → Statement ; StmtList  → GOTO(5, StmtList) = 23
-  127 [             0 13 36 67 5 23] end . $                                SHIFT shift to state 46
-  128 [          0 13 36 67 5 23 46] . $                                   REDUCE reduce by r18: Statement → begin StmtList end  → GOTO(67, Statement) = 88
-  129 [               0 13 36 67 88] . $                                   REDUCE reduce by r2: Block → ConstDecl VarDecl ProcDecls Statement  → GOTO(0, Block) = 10
-  130 [                        0 10] . $                                    SHIFT shift to state 34
-  131 [                     0 10 34] $                                     REDUCE reduce by r1: Program → Block .  → GOTO(0, Program) = 12
-  132 [                        0 12] $                                     ACCEPT accept
-========================================================================================================================
-  Total steps: 133
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on while: shift → 7 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on read: shift → 11 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on begin: shift → 5 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on if: shift → 6 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on id: shift → 2 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on call: shift → 3 vs reduce r14
-  [ERROR] Warning (grammar): State 0: shift/reduce conflict on write: shift → 9 vs reduce r14
-  [ERROR] Warning (grammar): State 45: reduce/reduce conflict on end: r23 vs r27
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on while: shift → 7 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on read: shift → 11 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on begin: shift → 5 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on if: shift → 6 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on id: shift → 2 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on call: shift → 3 vs reduce r14
-  [ERROR] Warning (grammar): State 69: shift/reduce conflict on write: shift → 9 vs reduce r14
-  [ERROR] Warning (grammar): State 92: reduce/reduce conflict on end: r24 vs r26
 
-Syntax tree:
+=== LL ASCII Tree ===
 Program
-  Block
-    ConstDecl
-      const [const]
-      id [a]
-      = [=]
-      num [10]
-      ConstRest
-      ; [;]
-    VarDecl
-      var [var]
-      id [b]
-      VarRest
-        , [,]
-        id [c]
-        VarRest
-      ; [;]
-    ProcDecls
-      ProcDecl
-        procedure [procedure]
-        id [p]
-        ; [;]
-        Block
-          Statement
-            if [if]
-            Condition
-              Expression
-                Sign
-                Term
-                  Factor
-                    id [a]
-                  FactorList
-                TermList
-              RelOp
-                <= [<=]
-              Expression
-                Sign
-                Term
-                  Factor
-                    num [10]
-                  FactorList
-                TermList
-            then [then]
-            Statement
-              begin [begin]
-              StmtList
-                Statement
-                  id [c]
-                  := [:=]
-                  Expression
-                    Sign
-                    Term
-                      Factor
-                        id [b]
-                      FactorList
-                    TermList
-                      + [+]
-                      Term
-                        Factor
-                          id [a]
-                        FactorList
-                      TermList
-                ; [;]
-                StmtList
-              end [end]
-        ; [;]
-      ProcDecls
-    Statement
-      begin [begin]
-      StmtList
-        Statement
-          read [read]
-          ( [(]
-          id [b]
-          ) [)]
-        ; [;]
-        StmtList
-          Statement
-            while [while]
-            Condition
-              Expression
-                Sign
-                Term
-                  Factor
-                    id [b]
-                  FactorList
-                TermList
-              RelOp
-                # [#]
-              Expression
-                Sign
-                Term
-                  Factor
-                    num
-                  FactorList
-                TermList
-            do [do]
-            Statement
-              begin [begin]
-              StmtList
-                Statement
-                  call [call]
-                  id [p]
-                ; [;]
-                StmtList
-                  Statement
-                    write [write]
-                    ( [(]
-                    Expression
-                      Sign
-                      Term
-                        Factor
-                          num [2]
-                        FactorList
-                          * [*]
-                          Factor
-                            id [c]
-                          FactorList
-                      TermList
-                    ) [)]
-                  ; [;]
-                  StmtList
-                    Statement
-                      read [read]
-                      ( [(]
-                      id [b]
-                      ) [)]
-                    ; [;]
-                    StmtList
-              end [end]
-      end [end]
-  . [.]
+├── Block
+│   ├── ConstDecl
+│   │   ├── const:const
+│   │   ├── ConstDef
+│   │   │   ├── id:a
+│   │   │   ├── =:=
+│   │   │   └── num:10
+│   │   └── ;:;
+│   ├── VarDecl
+│   │   ├── var:var
+│   │   ├── id:b
+│   │   ├── ,:,
+│   │   ├── id:c
+│   │   └── ;:;
+│   ├── ProcDecl
+│   │   ├── procedure:procedure
+│   │   ├── id:p
+│   │   ├── ;:;
+│   │   ├── Block
+│   │   │   └── Statement
+│   │   │       ├── if:if
+│   │   │       ├── Condition
+│   │   │       │   ├── Expression
+│   │   │       │   │   └── Term
+│   │   │       │   │       └── Factor
+│   │   │       │   │           └── id:a
+│   │   │       │   ├── RelOp
+│   │   │       │   │   └── <=:<=
+│   │   │       │   └── Expression
+│   │   │       │       └── Term
+│   │   │       │           └── Factor
+│   │   │       │               └── num:10
+│   │   │       ├── then:then
+│   │   │       └── Statement
+│   │   │           ├── begin:begin
+│   │   │           ├── Statement
+│   │   │           │   ├── id:c
+│   │   │           │   ├── :=::=
+│   │   │           │   └── Expression
+│   │   │           │       ├── Term
+│   │   │           │       │   └── Factor
+│   │   │           │       │       └── id:b
+│   │   │           │       ├── +:+
+│   │   │           │       └── Term
+│   │   │           │           └── Factor
+│   │   │           │               └── id:a
+│   │   │           ├── ;:;
+│   │   │           └── end:end
+│   │   └── ;:;
+│   └── Statement
+│       ├── begin:begin
+│       ├── Statement
+│       │   ├── read:read
+│       │   ├── (:(
+│       │   ├── id:b
+│       │   └── ):)
+│       ├── ;:;
+│       ├── Statement
+│       │   ├── while:while
+│       │   ├── Condition
+│       │   │   ├── Expression
+│       │   │   │   └── Term
+│       │   │   │       └── Factor
+│       │   │   │           └── id:b
+│       │   │   ├── RelOp
+│       │   │   │   └── #:#
+│       │   │   └── Expression
+│       │   │       └── Term
+│       │   │           └── Factor
+│       │   │               └── num:0
+│       │   ├── do:do
+│       │   └── Statement
+│       │       ├── begin:begin
+│       │       ├── Statement
+│       │       │   ├── call:call
+│       │       │   └── id:p
+│       │       ├── ;:;
+│       │       ├── Statement
+│       │       │   ├── write:write
+│       │       │   ├── (:(
+│       │       │   ├── Expression
+│       │       │   │   └── Term
+│       │       │   │       ├── Factor
+│       │       │   │       │   └── num:2
+│       │       │   │       ├── *:*
+│       │       │   │       └── Factor
+│       │       │   │           └── id:c
+│       │       │   └── ):)
+│       │       ├── ;:;
+│       │       ├── Statement
+│       │       │   ├── read:read
+│       │       │   ├── (:(
+│       │       │   ├── id:b
+│       │       │   └── ):)
+│       │       ├── ;:;
+│       │       └── end:end
+│       └── end:end
+└── .:.
+
+=== LL DOT ===
+// ParseTree
+digraph ParseTree {
+  rankdir=TB;
+  node [shape=box, style=filled, fontname="Courier New", fontsize=11];
+  edge [fontname="Courier New", fontsize=9];
+
+  n1 [label="Program", fillcolor="#E8F0FE"];
+  n2 [label="Block", fillcolor="#E8F0FE"];
+  n1 -> n2;
+  n3 [label="ConstDecl", fillcolor="#E8F0FE"];
+  n2 -> n3;
+  n4 [label="const\nconst", fillcolor="#D1ECF1"];
+  n3 -> n4;
+  n5 [label="ConstDef", fillcolor="#E8F0FE"];
+  n3 -> n5;
+  n6 [label="id\na", fillcolor="#FFF3CD"];
+  n5 -> n6;
+  n7 [label="=\n=", fillcolor="#F8D7DA"];
+  n5 -> n7;
+  n8 [label="num\n10", fillcolor="#D4EDDA"];
+  n5 -> n8;
+  n9 [label=";\n;", fillcolor="#E2E3E5"];
+  n3 -> n9;
+  n10 [label="VarDecl", fillcolor="#E8F0FE"];
+  n2 -> n10;
+  n11 [label="var\nvar", fillcolor="#D1ECF1"];
+  n10 -> n11;
+  n12 [label="id\nb", fillcolor="#FFF3CD"];
+  n10 -> n12;
+  n13 [label=",\n,", fillcolor="#E2E3E5"];
+  n10 -> n13;
+  n14 [label="id\nc", fillcolor="#FFF3CD"];
+  n10 -> n14;
+  n15 [label=";\n;", fillcolor="#E2E3E5"];
+  n10 -> n15;
+  n16 [label="ProcDecl", fillcolor="#E8F0FE"];
+  n2 -> n16;
+  n17 [label="procedure\nprocedure", fillcolor="#D1ECF1"];
+  n16 -> n17;
+  n18 [label="id\np", fillcolor="#FFF3CD"];
+  n16 -> n18;
+  n19 [label=";\n;", fillcolor="#E2E3E5"];
+  n16 -> n19;
+  n20 [label="Block", fillcolor="#E8F0FE"];
+  n16 -> n20;
+  n21 [label="Statement", fillcolor="#E8F0FE"];
+  n20 -> n21;
+  n22 [label="if\nif", fillcolor="#D1ECF1"];
+  n21 -> n22;
+  n23 [label="Condition", fillcolor="#E8F0FE"];
+  n21 -> n23;
+  n24 [label="Expression", fillcolor="#E8F0FE"];
+  n23 -> n24;
+  n25 [label="Term", fillcolor="#E8F0FE"];
+  n24 -> n25;
+  n26 [label="Factor", fillcolor="#E8F0FE"];
+  n25 -> n26;
+  n27 [label="id\na", fillcolor="#FFF3CD"];
+  n26 -> n27;
+  n28 [label="RelOp", fillcolor="#E8F0FE"];
+  n23 -> n28;
+  n29 [label="<=\n<=", fillcolor="#F8D7DA"];
+  n28 -> n29;
+  n30 [label="Expression", fillcolor="#E8F0FE"];
+  n23 -> n30;
+  n31 [label="Term", fillcolor="#E8F0FE"];
+  n30 -> n31;
+  n32 [label="Factor", fillcolor="#E8F0FE"];
+  n31 -> n32;
+  n33 [label="num\n10", fillcolor="#D4EDDA"];
+  n32 -> n33;
+  n34 [label="then\nthen", fillcolor="#D1ECF1"];
+  n21 -> n34;
+  n35 [label="Statement", fillcolor="#E8F0FE"];
+  n21 -> n35;
+  n36 [label="begin\nbegin", fillcolor="#D1ECF1"];
+  n35 -> n36;
+  n37 [label="Statement", fillcolor="#E8F0FE"];
+  n35 -> n37;
+  n38 [label="id\nc", fillcolor="#FFF3CD"];
+  n37 -> n38;
+  n39 [label=":=\n:=", fillcolor="#F8D7DA"];
+  n37 -> n39;
+  n40 [label="Expression", fillcolor="#E8F0FE"];
+  n37 -> n40;
+  n41 [label="Term", fillcolor="#E8F0FE"];
+  n40 -> n41;
+  n42 [label="Factor", fillcolor="#E8F0FE"];
+  n41 -> n42;
+  n43 [label="id\nb", fillcolor="#FFF3CD"];
+  n42 -> n43;
+  n44 [label="+\n+", fillcolor="#F8D7DA"];
+  n40 -> n44;
+  n45 [label="Term", fillcolor="#E8F0FE"];
+  n40 -> n45;
+  n46 [label="Factor", fillcolor="#E8F0FE"];
+  n45 -> n46;
+  n47 [label="id\na", fillcolor="#FFF3CD"];
+  n46 -> n47;
+  n48 [label=";\n;", fillcolor="#E2E3E5"];
+  n35 -> n48;
+  n49 [label="end\nend", fillcolor="#D1ECF1"];
+  n35 -> n49;
+  n50 [label=";\n;", fillcolor="#E2E3E5"];
+  n16 -> n50;
+  n51 [label="Statement", fillcolor="#E8F0FE"];
+  n2 -> n51;
+  n52 [label="begin\nbegin", fillcolor="#D1ECF1"];
+  n51 -> n52;
+  n53 [label="Statement", fillcolor="#E8F0FE"];
+  n51 -> n53;
+  n54 [label="read\nread", fillcolor="#D1ECF1"];
+  n53 -> n54;
+  n55 [label="(\n(", fillcolor="#E2E3E5"];
+  n53 -> n55;
+  n56 [label="id\nb", fillcolor="#FFF3CD"];
+  n53 -> n56;
+  n57 [label=")\n)", fillcolor="#E2E3E5"];
+  n53 -> n57;
+  n58 [label=";\n;", fillcolor="#E2E3E5"];
+  n51 -> n58;
+  n59 [label="Statement", fillcolor="#E8F0FE"];
+  n51 -> n59;
+  n60 [label="while\nwhile", fillcolor="#D1ECF1"];
+  n59 -> n60;
+  n61 [label="Condition", fillcolor="#E8F0FE"];
+  n59 -> n61;
+  n62 [label="Expression", fillcolor="#E8F0FE"];
+  n61 -> n62;
+  n63 [label="Term", fillcolor="#E8F0FE"];
+  n62 -> n63;
+  n64 [label="Factor", fillcolor="#E8F0FE"];
+  n63 -> n64;
+  n65 [label="id\nb", fillcolor="#FFF3CD"];
+  n64 -> n65;
+  n66 [label="RelOp", fillcolor="#E8F0FE"];
+  n61 -> n66;
+  n67 [label="#\n#", fillcolor="#F8D7DA"];
+  n66 -> n67;
+  n68 [label="Expression", fillcolor="#E8F0FE"];
+  n61 -> n68;
+  n69 [label="Term", fillcolor="#E8F0FE"];
+  n68 -> n69;
+  n70 [label="Factor", fillcolor="#E8F0FE"];
+  n69 -> n70;
+  n71 [label="num\n0", fillcolor="#D4EDDA"];
+  n70 -> n71;
+  n72 [label="do\ndo", fillcolor="#D1ECF1"];
+  n59 -> n72;
+  n73 [label="Statement", fillcolor="#E8F0FE"];
+  n59 -> n73;
+  n74 [label="begin\nbegin", fillcolor="#D1ECF1"];
+  n73 -> n74;
+  n75 [label="Statement", fillcolor="#E8F0FE"];
+  n73 -> n75;
+  n76 [label="call\ncall", fillcolor="#D1ECF1"];
+  n75 -> n76;
+  n77 [label="id\np", fillcolor="#FFF3CD"];
+  n75 -> n77;
+  n78 [label=";\n;", fillcolor="#E2E3E5"];
+  n73 -> n78;
+  n79 [label="Statement", fillcolor="#E8F0FE"];
+  n73 -> n79;
+  n80 [label="write\nwrite", fillcolor="#D1ECF1"];
+  n79 -> n80;
+  n81 [label="(\n(", fillcolor="#E2E3E5"];
+  n79 -> n81;
+  n82 [label="Expression", fillcolor="#E8F0FE"];
+  n79 -> n82;
+  n83 [label="Term", fillcolor="#E8F0FE"];
+  n82 -> n83;
+  n84 [label="Factor", fillcolor="#E8F0FE"];
+  n83 -> n84;
+  n85 [label="num\n2", fillcolor="#D4EDDA"];
+  n84 -> n85;
+  n86 [label="*\n*", fillcolor="#F8D7DA"];
+  n83 -> n86;
+  n87 [label="Factor", fillcolor="#E8F0FE"];
+  n83 -> n87;
+  n88 [label="id\nc", fillcolor="#FFF3CD"];
+  n87 -> n88;
+  n89 [label=")\n)", fillcolor="#E2E3E5"];
+  n79 -> n89;
+  n90 [label=";\n;", fillcolor="#E2E3E5"];
+  n73 -> n90;
+  n91 [label="Statement", fillcolor="#E8F0FE"];
+  n73 -> n91;
+  n92 [label="read\nread", fillcolor="#D1ECF1"];
+  n91 -> n92;
+  n93 [label="(\n(", fillcolor="#E2E3E5"];
+  n91 -> n93;
+  n94 [label="id\nb", fillcolor="#FFF3CD"];
+  n91 -> n94;
+  n95 [label=")\n)", fillcolor="#E2E3E5"];
+  n91 -> n95;
+  n96 [label=";\n;", fillcolor="#E2E3E5"];
+  n73 -> n96;
+  n97 [label="end\nend", fillcolor="#D1ECF1"];
+  n73 -> n97;
+  n98 [label="end\nend", fillcolor="#D1ECF1"];
+  n51 -> n98;
+  n99 [label=".\n.", fillcolor="#E2E3E5"];
+  n1 -> n99;
+}
+
+=== LL JSON ===
+{
+  "label": "Program",
+  "value": null,
+  "type": "nonterminal",
+  "children": [
+    {
+      "label": "Block",
+      "value": null,
+      "type": "nonterminal",
+      "children": [
+        {
+          "label": "ConstDecl",
+          "value": null,
+          "type": "nonterminal",
+          "children": [
+            {
+              "label": "const",
+              "value": "const",
+              "type": "keyword",
+              "children": []
+            },
+            {
+              "label": "ConstDef",
+              "value": null,
+              "type": "nonterminal",
+              "children": [
+                {
+                  "label": "id",
+                  "value": "a",
+                  "type": "identifier",
+                  "children": []
+                },
+                {
+                  "label": "=",
+                  "value": "=",
+                  "type": "operator",
+                  "children": []
+                },
+                {
+                  "label": "num",
+                  "value": "10",
+                  "type": "number",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "label": ";",
+              "value": ";",
+              "type": "delimiter",
+              "children": []
+            }
+          ]
+        },
+        {
+          "label": "VarDecl",
+          "value": null,
+          "type": "nonterminal",
+          "children": [
+            {
+              "label": "var",
+              "value": "var",
+              "type": "keyword",
+              "children": []
+            },
+            {
+              "label": "id",
+              "value": "b",
+              "type": "identifier",
+              "children": []
+            },
+            {
+              "label": ",",
+              "value": ",",
+              "type": "delimiter",
+              "children": []
+            },
+            {
+              "label": "id",
+              "value": "c",
+              "type": "identifier",
+              "children": []
+            },
+            {
+              "label": ";",
+              "value": ";",
+              "type": "delimiter",
+              "children": []
+            }
+          ]
+        },
+        {
+          "label": "ProcDecl",
+          "value": null,
+          "type": "nonterminal",
+          "children": [
+            {
+              "label": "procedure",
+              "value": "procedure",
+              "type": "keyword",
+              "children": []
+            },
+            {
+              "label": "id",
+              "value": "p",
+              "type": "identifier",
+              "children": []
+            },
+            {
+              "label": ";",
+              "value": ";",
+              "type": "delimiter",
+              "children": []
+            },
+            {
+              "label": "Block",
+              "value": null,
+              "type": "nonterminal",
+              "children": [
+                {
+                  "label": "Statement",
+                  "value": null,
+                  "type": "nonterminal",
+                  "children": [
+                    {
+                      "label": "if",
+                      "value": "if",
+                      "type": "keyword",
+                      "children": []
+                    },
+                    {
+                      "label": "Condition",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "Expression",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "Term",
+                              "value": null,
+                              "type": "nonterminal",
+                              "children": [
+                                {
+                                  "label": "Factor",
+                                  "value": null,
+                                  "type": "nonterminal",
+                                  "children": [
+                                    {
+                                      "label": "id",
+                                      "value": "a",
+                                      "type": "identifier",
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": "RelOp",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "<=",
+                              "value": "<=",
+                              "type": "operator",
+                              "children": []
+                            }
+                          ]
+                        },
+                        {
+                          "label": "Expression",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "Term",
+                              "value": null,
+                              "type": "nonterminal",
+                              "children": [
+                                {
+                                  "label": "Factor",
+                                  "value": null,
+                                  "type": "nonterminal",
+                                  "children": [
+                                    {
+                                      "label": "num",
+                                      "value": "10",
+                                      "type": "number",
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "then",
+                      "value": "then",
+                      "type": "keyword",
+                      "children": []
+                    },
+                    {
+                      "label": "Statement",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "begin",
+                          "value": "begin",
+                          "type": "keyword",
+                          "children": []
+                        },
+                        {
+                          "label": "Statement",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "id",
+                              "value": "c",
+                              "type": "identifier",
+                              "children": []
+                            },
+                            {
+                              "label": ":=",
+                              "value": ":=",
+                              "type": "operator",
+                              "children": []
+                            },
+                            {
+                              "label": "Expression",
+                              "value": null,
+                              "type": "nonterminal",
+                              "children": [
+                                {
+                                  "label": "Term",
+                                  "value": null,
+                                  "type": "nonterminal",
+                                  "children": [
+                                    {
+                                      "label": "Factor",
+                                      "value": null,
+                                      "type": "nonterminal",
+                                      "children": [
+                                        {
+                                          "label": "id",
+                                          "value": "b",
+                                          "type": "identifier",
+                                          "children": []
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "+",
+                                  "value": "+",
+                                  "type": "operator",
+                                  "children": []
+                                },
+                                {
+                                  "label": "Term",
+                                  "value": null,
+                                  "type": "nonterminal",
+                                  "children": [
+                                    {
+                                      "label": "Factor",
+                                      "value": null,
+                                      "type": "nonterminal",
+                                      "children": [
+                                        {
+                                          "label": "id",
+                                          "value": "a",
+                                          "type": "identifier",
+                                          "children": []
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": ";",
+                          "value": ";",
+                          "type": "delimiter",
+                          "children": []
+                        },
+                        {
+                          "label": "end",
+                          "value": "end",
+                          "type": "keyword",
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": ";",
+              "value": ";",
+              "type": "delimiter",
+              "children": []
+            }
+          ]
+        },
+        {
+          "label": "Statement",
+          "value": null,
+          "type": "nonterminal",
+          "children": [
+            {
+              "label": "begin",
+              "value": "begin",
+              "type": "keyword",
+              "children": []
+            },
+            {
+              "label": "Statement",
+              "value": null,
+              "type": "nonterminal",
+              "children": [
+                {
+                  "label": "read",
+                  "value": "read",
+                  "type": "keyword",
+                  "children": []
+                },
+                {
+                  "label": "(",
+                  "value": "(",
+                  "type": "delimiter",
+                  "children": []
+                },
+                {
+                  "label": "id",
+                  "value": "b",
+                  "type": "identifier",
+                  "children": []
+                },
+                {
+                  "label": ")",
+                  "value": ")",
+                  "type": "delimiter",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "label": ";",
+              "value": ";",
+              "type": "delimiter",
+              "children": []
+            },
+            {
+              "label": "Statement",
+              "value": null,
+              "type": "nonterminal",
+              "children": [
+                {
+                  "label": "while",
+                  "value": "while",
+                  "type": "keyword",
+                  "children": []
+                },
+                {
+                  "label": "Condition",
+                  "value": null,
+                  "type": "nonterminal",
+                  "children": [
+                    {
+                      "label": "Expression",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "Term",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "Factor",
+                              "value": null,
+                              "type": "nonterminal",
+                              "children": [
+                                {
+                                  "label": "id",
+                                  "value": "b",
+                                  "type": "identifier",
+                                  "children": []
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "label": "RelOp",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "#",
+                          "value": "#",
+                          "type": "operator",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Expression",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "Term",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "Factor",
+                              "value": null,
+                              "type": "nonterminal",
+                              "children": [
+                                {
+                                  "label": "num",
+                                  "value": "0",
+                                  "type": "number",
+                                  "children": []
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "do",
+                  "value": "do",
+                  "type": "keyword",
+                  "children": []
+                },
+                {
+                  "label": "Statement",
+                  "value": null,
+                  "type": "nonterminal",
+                  "children": [
+                    {
+                      "label": "begin",
+                      "value": "begin",
+                      "type": "keyword",
+                      "children": []
+                    },
+                    {
+                      "label": "Statement",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "call",
+                          "value": "call",
+                          "type": "keyword",
+                          "children": []
+                        },
+                        {
+                          "label": "id",
+                          "value": "p",
+                          "type": "identifier",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "label": ";",
+                      "value": ";",
+                      "type": "delimiter",
+                      "children": []
+                    },
+                    {
+                      "label": "Statement",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "write",
+                          "value": "write",
+                          "type": "keyword",
+                          "children": []
+                        },
+                        {
+                          "label": "(",
+                          "value": "(",
+                          "type": "delimiter",
+                          "children": []
+                        },
+                        {
+                          "label": "Expression",
+                          "value": null,
+                          "type": "nonterminal",
+                          "children": [
+                            {
+                              "label": "Term",
+                              "value": null,
+                              "type": "nonterminal",
+                              "children": [
+                                {
+                                  "label": "Factor",
+                                  "value": null,
+                                  "type": "nonterminal",
+                                  "children": [
+                                    {
+                                      "label": "num",
+                                      "value": "2",
+                                      "type": "number",
+                                      "children": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "label": "*",
+                                  "value": "*",
+                                  "type": "operator",
+                                  "children": []
+                                },
+                                {
+                                  "label": "Factor",
+                                  "value": null,
+                                  "type": "nonterminal",
+                                  "children": [
+                                    {
+                                      "label": "id",
+                                      "value": "c",
+                                      "type": "identifier",
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "label": ")",
+                          "value": ")",
+                          "type": "delimiter",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "label": ";",
+                      "value": ";",
+                      "type": "delimiter",
+                      "children": []
+                    },
+                    {
+                      "label": "Statement",
+                      "value": null,
+                      "type": "nonterminal",
+                      "children": [
+                        {
+                          "label": "read",
+                          "value": "read",
+                          "type": "keyword",
+                          "children": []
+                        },
+                        {
+                          "label": "(",
+                          "value": "(",
+                          "type": "delimiter",
+                          "children": []
+                        },
+                        {
+                          "label": "id",
+                          "value": "b",
+                          "type": "identifier",
+                          "children": []
+                        },
+                        {
+                          "label": ")",
+                          "value": ")",
+                          "type": "delimiter",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "label": ";",
+                      "value": ";",
+                      "type": "delimiter",
+                      "children": []
+                    },
+                    {
+                      "label": "end",
+                      "value": "end",
+                      "type": "keyword",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "end",
+              "value": "end",
+              "type": "keyword",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": ".",
+      "value": ".",
+      "type": "delimiter",
+      "children": []
+    }
+  ]
+}
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on call: shift → 3 vs reduce r14
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on id: shift → 2 vs reduce r14
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on if: shift → 6 vs reduce r14
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on begin: shift → 5 vs reduce r14
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on read: shift → 11 vs reduce r14
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on while: shift → 7 vs reduce r14
+  [LR Error] Warning (grammar): State 0: shift/reduce conflict on write: shift → 9 vs reduce r14
+  [LR Error] Warning (grammar): State 45: reduce/reduce conflict on end: r23 vs r27
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on call: shift → 3 vs reduce r14
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on id: shift → 2 vs reduce r14
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on if: shift → 6 vs reduce r14
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on begin: shift → 5 vs reduce r14
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on read: shift → 11 vs reduce r14
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on while: shift → 7 vs reduce r14
+  [LR Error] Warning (grammar): State 69: shift/reduce conflict on write: shift → 9 vs reduce r14
+  [LR Error] Warning (grammar): State 92: reduce/reduce conflict on end: r24 vs r26
+
+=== LR ASCII Tree ===
+Program
+├── Block
+│   ├── ConstDecl
+│   │   ├── const:const
+│   │   ├── id:a
+│   │   ├── =:=
+│   │   ├── num:10
+│   │   ├── ConstRest
+│   │   └── ;:;
+│   ├── VarDecl
+│   │   ├── var:var
+│   │   ├── id:b
+│   │   ├── VarRest
+│   │   │   ├── ,:,
+│   │   │   ├── id:c
+│   │   │   └── VarRest
+│   │   └── ;:;
+│   ├── ProcDecls
+│   │   ├── ProcDecl
+│   │   │   ├── procedure:procedure
+│   │   │   ├── id:p
+│   │   │   ├── ;:;
+│   │   │   ├── Block
+│   │   │   │   └── Statement
+│   │   │   │       ├── if:if
+│   │   │   │       ├── Condition
+│   │   │   │       │   ├── Expression
+│   │   │   │       │   │   ├── Sign
+│   │   │   │       │   │   ├── Term
+│   │   │   │       │   │   │   ├── Factor
+│   │   │   │       │   │   │   │   └── id:a
+│   │   │   │       │   │   │   └── FactorList
+│   │   │   │       │   │   └── TermList
+│   │   │   │       │   ├── RelOp
+│   │   │   │       │   │   └── <=:<=
+│   │   │   │       │   └── Expression
+│   │   │   │       │       ├── Sign
+│   │   │   │       │       ├── Term
+│   │   │   │       │       │   ├── Factor
+│   │   │   │       │       │   │   └── num:10
+│   │   │   │       │       │   └── FactorList
+│   │   │   │       │       └── TermList
+│   │   │   │       ├── then:then
+│   │   │   │       └── Statement
+│   │   │   │           ├── begin:begin
+│   │   │   │           ├── StmtList
+│   │   │   │           │   ├── Statement
+│   │   │   │           │   │   ├── id:c
+│   │   │   │           │   │   ├── :=::=
+│   │   │   │           │   │   └── Expression
+│   │   │   │           │   │       ├── Sign
+│   │   │   │           │   │       ├── Term
+│   │   │   │           │   │       │   ├── Factor
+│   │   │   │           │   │       │   │   └── id:b
+│   │   │   │           │   │       │   └── FactorList
+│   │   │   │           │   │       └── TermList
+│   │   │   │           │   │           ├── +:+
+│   │   │   │           │   │           ├── Term
+│   │   │   │           │   │           │   ├── Factor
+│   │   │   │           │   │           │   │   └── id:a
+│   │   │   │           │   │           │   └── FactorList
+│   │   │   │           │   │           └── TermList
+│   │   │   │           │   ├── ;:;
+│   │   │   │           │   └── StmtList
+│   │   │   │           └── end:end
+│   │   │   └── ;:;
+│   │   └── ProcDecls
+│   └── Statement
+│       ├── begin:begin
+│       ├── StmtList
+│       │   ├── Statement
+│       │   │   ├── read:read
+│       │   │   ├── (:(
+│       │   │   ├── id:b
+│       │   │   └── ):)
+│       │   ├── ;:;
+│       │   └── StmtList
+│       │       └── Statement
+│       │           ├── while:while
+│       │           ├── Condition
+│       │           │   ├── Expression
+│       │           │   │   ├── Sign
+│       │           │   │   ├── Term
+│       │           │   │   │   ├── Factor
+│       │           │   │   │   │   └── id:b
+│       │           │   │   │   └── FactorList
+│       │           │   │   └── TermList
+│       │           │   ├── RelOp
+│       │           │   │   └── #:#
+│       │           │   └── Expression
+│       │           │       ├── Sign
+│       │           │       ├── Term
+│       │           │       │   ├── Factor
+│       │           │       │   │   └── num:0
+│       │           │       │   └── FactorList
+│       │           │       └── TermList
+│       │           ├── do:do
+│       │           └── Statement
+│       │               ├── begin:begin
+│       │               ├── StmtList
+│       │               │   ├── Statement
+│       │               │   │   ├── call:call
+│       │               │   │   └── id:p
+│       │               │   ├── ;:;
+│       │               │   └── StmtList
+│       │               │       ├── Statement
+│       │               │       │   ├── write:write
+│       │               │       │   ├── (:(
+│       │               │       │   ├── Expression
+│       │               │       │   │   ├── Sign
+│       │               │       │   │   ├── Term
+│       │               │       │   │   │   ├── Factor
+│       │               │       │   │   │   │   └── num:2
+│       │               │       │   │   │   └── FactorList
+│       │               │       │   │   │       ├── *:*
+│       │               │       │   │   │       ├── Factor
+│       │               │       │   │   │       │   └── id:c
+│       │               │       │   │   │       └── FactorList
+│       │               │       │   │   └── TermList
+│       │               │       │   └── ):)
+│       │               │       ├── ;:;
+│       │               │       └── StmtList
+│       │               │           ├── Statement
+│       │               │           │   ├── read:read
+│       │               │           │   ├── (:(
+│       │               │           │   ├── id:b
+│       │               │           │   └── ):)
+│       │               │           ├── ;:;
+│       │               │           └── StmtList
+│       │               └── end:end
+│       └── end:end
+└── .:.
+
+=== Comparison ===
+=====================================================================================================================
+                LL(1) Parse Tree                  ||                          LR Parse Tree                         
+---------------------------------------------------------------------------------------------------------------------
+Program                                           ||  Program
+├── Block                                         ||  ├── Block
+│   ├── ConstDecl                                 ||  │   ├── ConstDecl
+│   │   ├── const:const                           ||  │   │   ├── const:const
+│   │   ├── ConstDef                              ||  │   │   ├── id:a
+│   │   │   ├── id:a                              ||  │   │   ├── =:=
+│   │   │   ├── =:=                               ||  │   │   ├── num:10
+│   │   │   └── num:10                            ||  │   │   ├── ConstRest
+│   │   └── ;:;                                   ||  │   │   └── ;:;
+│   ├── VarDecl                                   ||  │   ├── VarDecl
+│   │   ├── var:var                               ||  │   │   ├── var:var
+│   │   ├── id:b                                  ||  │   │   ├── id:b
+│   │   ├── ,:,                                   ||  │   │   ├── VarRest
+│   │   ├── id:c                                  ||  │   │   │   ├── ,:,
+│   │   └── ;:;                                   ||  │   │   │   ├── id:c
+│   ├── ProcDecl                                  ||  │   │   │   └── VarRest
+│   │   ├── procedure:procedure                   ||  │   │   └── ;:;
+│   │   ├── id:p                                  ||  │   ├── ProcDecls
+│   │   ├── ;:;                                   ||  │   │   ├── ProcDecl
+│   │   ├── Block                                 ||  │   │   │   ├── procedure:procedure
+│   │   │   └── Statement                         ||  │   │   │   ├── id:p
+│   │   │       ├── if:if                         ||  │   │   │   ├── ;:;
+│   │   │       ├── Condition                     ||  │   │   │   ├── Block
+│   │   │       │   ├── Expression                ||  │   │   │   │   └── Statement
+│   │   │       │   │   └── Term                  ||  │   │   │   │       ├── if:if
+│   │   │       │   │       └── Factor            ||  │   │   │   │       ├── Condition
+│   │   │       │   │           └── id:a          ||  │   │   │   │       │   ├── Expression
+│   │   │       │   ├── RelOp                     ||  │   │   │   │       │   │   ├── Sign
+│   │   │       │   │   └── <=:<=                 ||  │   │   │   │       │   │   ├── Term
+│   │   │       │   └── Expression                ||  │   │   │   │       │   │   │   ├── Factor
+│   │   │       │       └── Term                  ||  │   │   │   │       │   │   │   │   └── id:a
+│   │   │       │           └── Factor            ||  │   │   │   │       │   │   │   └── FactorList
+│   │   │       │               └── num:10        ||  │   │   │   │       │   │   └── TermList
+│   │   │       ├── then:then                     ||  │   │   │   │       │   ├── RelOp
+│   │   │       └── Statement                     ||  │   │   │   │       │   │   └── <=:<=
+│   │   │           ├── begin:begin               ||  │   │   │   │       │   └── Expression
+│   │   │           ├── Statement                 ||  │   │   │   │       │       ├── Sign
+│   │   │           │   ├── id:c                  ||  │   │   │   │       │       ├── Term
+│   │   │           │   ├── :=::=                 ||  │   │   │   │       │       │   ├── Factor
+│   │   │           │   └── Expression            ||  │   │   │   │       │       │   │   └── num:10
+│   │   │           │       ├── Term              ||  │   │   │   │       │       │   └── FactorList
+│   │   │           │       │   └── Factor        ||  │   │   │   │       │       └── TermList
+│   │   │           │       │       └── id:b      ||  │   │   │   │       ├── then:then
+│   │   │           │       ├── +:+               ||  │   │   │   │       └── Statement
+│   │   │           │       └── Term              ||  │   │   │   │           ├── begin:begin
+│   │   │           │           └── Factor        ||  │   │   │   │           ├── StmtList
+│   │   │           │               └── id:a      ||  │   │   │   │           │   ├── Statement
+│   │   │           ├── ;:;                       ||  │   │   │   │           │   │   ├── id:c
+│   │   │           └── end:end                   ||  │   │   │   │           │   │   ├── :=::=
+│   │   └── ;:;                                   ||  │   │   │   │           │   │   └── Expression
+│   └── Statement                                 ||  │   │   │   │           │   │       ├── Sign
+│       ├── begin:begin                           ||  │   │   │   │           │   │       ├── Term
+│       ├── Statement                             ||  │   │   │   │           │   │       │   ├── Factor
+│       │   ├── read:read                         ||  │   │   │   │           │   │       │   │   └── id:b
+│       │   ├── (:(                               ||  │   │   │   │           │   │       │   └── FactorList
+│       │   ├── id:b                              ||  │   │   │   │           │   │       └── TermList
+│       │   └── ):)                               ||  │   │   │   │           │   │           ├── +:+
+│       ├── ;:;                                   ||  │   │   │   │           │   │           ├── Term
+│       ├── Statement                             ||  │   │   │   │           │   │           │   ├── Factor
+│       │   ├── while:while                       ||  │   │   │   │           │   │           │   │   └── id:a
+│       │   ├── Condition                         ||  │   │   │   │           │   │           │   └── FactorList
+│       │   │   ├── Expression                    ||  │   │   │   │           │   │           └── TermList
+│       │   │   │   └── Term                      ||  │   │   │   │           │   ├── ;:;
+│       │   │   │       └── Factor                ||  │   │   │   │           │   └── StmtList
+│       │   │   │           └── id:b              ||  │   │   │   │           └── end:end
+│       │   │   ├── RelOp                         ||  │   │   │   └── ;:;
+│       │   │   │   └── #:#                       ||  │   │   └── ProcDecls
+│       │   │   └── Expression                    ||  │   └── Statement
+│       │   │       └── Term                      ||  │       ├── begin:begin
+│       │   │           └── Factor                ||  │       ├── StmtList
+│       │   │               └── num:0             ||  │       │   ├── Statement
+│       │   ├── do:do                             ||  │       │   │   ├── read:read
+│       │   └── Statement                         ||  │       │   │   ├── (:(
+│       │       ├── begin:begin                   ||  │       │   │   ├── id:b
+│       │       ├── Statement                     ||  │       │   │   └── ):)
+│       │       │   ├── call:call                 ||  │       │   ├── ;:;
+│       │       │   └── id:p                      ||  │       │   └── StmtList
+│       │       ├── ;:;                           ||  │       │       └── Statement
+│       │       ├── Statement                     ||  │       │           ├── while:while
+│       │       │   ├── write:write               ||  │       │           ├── Condition
+│       │       │   ├── (:(                       ||  │       │           │   ├── Expression
+│       │       │   ├── Expression                ||  │       │           │   │   ├── Sign
+│       │       │   │   └── Term                  ||  │       │           │   │   ├── Term
+│       │       │   │       ├── Factor            ||  │       │           │   │   │   ├── Factor
+│       │       │   │       │   └── num:2         ||  │       │           │   │   │   │   └── id:b
+│       │       │   │       ├── *:*               ||  │       │           │   │   │   └── FactorList
+│       │       │   │       └── Factor            ||  │       │           │   │   └── TermList
+│       │       │   │           └── id:c          ||  │       │           │   ├── RelOp
+│       │       │   └── ):)                       ||  │       │           │   │   └── #:#
+│       │       ├── ;:;                           ||  │       │           │   └── Expression
+│       │       ├── Statement                     ||  │       │           │       ├── Sign
+│       │       │   ├── read:read                 ||  │       │           │       ├── Term
+│       │       │   ├── (:(                       ||  │       │           │       │   ├── Factor
+│       │       │   ├── id:b                      ||  │       │           │       │   │   └── num:0
+│       │       │   └── ):)                       ||  │       │           │       │   └── FactorList
+│       │       ├── ;:;                           ||  │       │           │       └── TermList
+│       │       └── end:end                       ||  │       │           ├── do:do
+│       └── end:end                               ||  │       │           └── Statement
+└── .:.                                           ||  │       │               ├── begin:begin
+                                                  ||  │       │               ├── StmtList
+                                                  ||  │       │               │   ├── Statement
+                                                  ||  │       │               │   │   ├── call:call
+                                                  ||  │       │               │   │   └── id:p
+                                                  ||  │       │               │   ├── ;:;
+                                                  ||  │       │               │   └── StmtList
+                                                  ||  │       │               │       ├── Statement
+                                                  ||  │       │               │       │   ├── write:write
+                                                  ||  │       │               │       │   ├── (:(
+                                                  ||  │       │               │       │   ├── Expression
+                                                  ||  │       │               │       │   │   ├── Sign
+                                                  ||  │       │               │       │   │   ├── Term
+                                                  ||  │       │               │       │   │   │   ├── Factor
+                                                  ||  │       │               │       │   │   │   │   └── num:2
+                                                  ||  │       │               │       │   │   │   └── FactorList
+                                                  ||  │       │               │       │   │   │       ├── *:*
+                                                  ||  │       │               │       │   │   │       ├── Factor
+                                                  ||  │       │               │       │   │   │       │   └── id:c
+                                                  ||  │       │               │       │   │   │       └── FactorList
+                                                  ||  │       │               │       │   │   └── TermList
+                                                  ||  │       │               │       │   └── ):)
+                                                  ||  │       │               │       ├── ;:;
+                                                  ||  │       │               │       └── StmtList
+                                                  ||  │       │               │           ├── Statement
+                                                  ||  │       │               │           │   ├── read:read
+                                                  ||  │       │               │           │   ├── (:(
+                                                  ||  │       │               │           │   ├── id:b
+                                                  ||  │       │               │           │   └── ):)
+                                                  ||  │       │               │           ├── ;:;
+                                                  ||  │       │               │           └── StmtList
+                                                  ||  │       │               └── end:end
+                                                  ||  │       └── end:end
+                                                  ||  └── .:.
+=====================================================================================================================

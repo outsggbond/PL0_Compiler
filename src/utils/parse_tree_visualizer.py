@@ -10,10 +10,16 @@
 2. 解析树 → ASCII 树形图 (控制台输出)
 3. 解析树 → JSON (序列化)
 4. 解析树 → HTML (可交互)
+5. 解析树 → PNG 图片 (Graphviz 自动渲染)
 """
-
+import re
 import json
-
+import os
+try:
+    from graphviz import Source
+    HAS_GRAPHVIZ = True
+except ImportError:
+    HAS_GRAPHVIZ = False
 
 # ── 颜色方案 ────────────────────────────────────────────────────────
 # 与 ll_parser.py / lr_parser.py 中的颜色保持一致
@@ -41,14 +47,7 @@ DELIMITER_SET = {"(", ")", ";", ",", "."}
 
 
 def classify_node(node):
-    """根据节点标签和值判断节点类型，返回颜色分类名。
-
-    Args:
-        node: ParseTreeNode 或 SyntaxTreeNode (有 .label, .value, .children)
-
-    Returns:
-        str: 颜色分类名
-    """
+    """根据节点标签和值判断节点类型，返回颜色分类名。"""
     if hasattr(node, 'children') and node.children:
         return "nonterminal"
 
@@ -82,11 +81,6 @@ class ParseTreeVisualizer:
     """
 
     def __init__(self, tree, title="ParseTree"):
-        """
-        Args:
-            tree: ParseTreeNode (LL) 或 SyntaxTreeNode (LR)
-            title: 图标题
-        """
         self.tree = tree
         self.title = title
         self._counter = 0
@@ -100,22 +94,23 @@ class ParseTreeVisualizer:
         self._counter += 1
         return f"n{self._counter}"
 
+
+
     def to_dot(self, orientation="TB"):
-        """将解析树转换为 Graphviz DOT 格式。
-
-        Args:
-            orientation: "TB" (从上到下) 或 "LR" (从左到右)
-
-        Returns:
-            str: DOT format string
-        """
         self._reset_counter()
+
+        graph_name = re.sub(
+            r'[^a-zA-Z0-9_]',
+            '_',
+            self.title
+        )
+
         lines = [
             f"// {self.title}",
-            f"digraph {self.title.replace(' ', '_')} {{",
+            f"digraph {graph_name} {{",
             f'  rankdir={orientation};',
-            '  node [shape=box, style=filled, fontname="Courier New", fontsize=11];',
-            '  edge [fontname="Courier New", fontsize=9];',
+            '  node [shape=box, style=filled, fontname="Microsoft YaHei", fontsize=11];',
+            '  edge [fontname="Microsoft YaHei", fontsize=9];',
             '',
         ]
 
@@ -145,14 +140,28 @@ class ParseTreeVisualizer:
         lines.append("}")
         return "\n".join(lines)
 
+    # ── 直接渲染 PNG ──────────────────────────────────────────────
+    def render_png(self, output_filename):
+        """将生成的 DOT 格式直接渲染并保存为 PNG 图片"""
+        if not HAS_GRAPHVIZ:
+            print(f"⚠️ 缺少 graphviz 库，无法渲染 {output_filename}.png。请运行: pip install graphviz")
+            return
+
+        dot_string = self.to_dot()
+        try:
+            src = Source(dot_string)
+            src.format = 'png'
+            # cleanup=True 意味着渲染后删除临时的 dot 源文件，只保留 png
+            src.render(output_filename, cleanup=True)
+            print(f"✅ 成功生成语法分析树图片: {output_filename}.png")
+        except Exception as e:
+            print(f"❌ 渲染图片失败！请确保系统已安装 Graphviz 软件并已配置环境变量。")
+            print(f"错误详情: {e}")
+
     # ── ASCII 树形图 ──────────────────────────────────────────────
 
     def to_ascii_tree(self):
-        """生成 ASCII 树形图 (适合控制台输出)。
-
-        Returns:
-            str: Unicode 树形图
-        """
+        """生成 ASCII 树形图 (适合控制台输出)。"""
         if self.tree is None:
             return "(null tree)"
 
@@ -190,11 +199,7 @@ class ParseTreeVisualizer:
     # ── 缩进树 ────────────────────────────────────────────────────
 
     def to_indented_text(self):
-        """生成缩进文本树 (简单风格)。
-
-        Returns:
-            str: 缩进文本
-        """
+        """生成缩进文本树 (简单风格)。"""
         if self.tree is None:
             return "(null tree)"
 
@@ -218,11 +223,7 @@ class ParseTreeVisualizer:
     # ── JSON 输出 ─────────────────────────────────────────────────
 
     def to_dict(self):
-        """将解析树转换为嵌套字典。
-
-        Returns:
-            dict: 树结构字典
-        """
+        """将解析树转换为嵌套字典。"""
         if self.tree is None:
             return None
 
@@ -242,25 +243,14 @@ class ParseTreeVisualizer:
         return _convert(self.tree)
 
     def to_json(self, indent=2):
-        """将解析树转换为 JSON 字符串。
-
-        Args:
-            indent: 缩进空格数
-
-        Returns:
-            str: JSON 字符串
-        """
+        """将解析树转换为 JSON 字符串。"""
         d = self.to_dict()
         return json.dumps(d, ensure_ascii=False, indent=indent)
 
     # ── HTML 交互式树 ─────────────────────────────────────────────
 
     def to_html(self):
-        """生成可交互的 HTML 树形可视化 (可在浏览器中折叠/展开)。
-
-        Returns:
-            str: 完整 HTML 页面
-        """
+        """生成可交互的 HTML 树形可视化 (可在浏览器中折叠/展开)。"""
         tree_data = self.to_json()
 
         html = f'''<!DOCTYPE html>
@@ -320,16 +310,7 @@ class ParseTreeVisualizer:
 
 
 def visualize_parse_tree(tree, output_format="ascii", title="ParseTree"):
-    """便捷函数: 可视化一个解析树。
-
-    Args:
-        tree: ParseTreeNode 或 SyntaxTreeNode
-        output_format: "ascii", "indent", "dot", "json", "html"
-        title: 图标题
-
-    Returns:
-        str: 可视化结果
-    """
+    """便捷函数: 可视化一个解析树。"""
     viz = ParseTreeVisualizer(tree, title)
     if output_format == "ascii":
         return viz.to_ascii_tree()
@@ -341,6 +322,11 @@ def visualize_parse_tree(tree, output_format="ascii", title="ParseTree"):
         return viz.to_json()
     elif output_format == "html":
         return viz.to_html()
+    elif output_format == "png":
+        # 约定如果直接要求生成 png，采用默认文件名
+        filename = f"{title.replace(' ', '_').lower()}_out"
+        viz.render_png(filename)
+        return f"已尝试渲染PNG至 {filename}.png"
     else:
         return viz.to_ascii_tree()
 
@@ -348,15 +334,7 @@ def visualize_parse_tree(tree, output_format="ascii", title="ParseTree"):
 # ── 比较 LL 和 LR 树 ────────────────────────────────────────────────
 
 def compare_trees(ll_tree, lr_tree):
-    """并排比较 LL 和 LR 解析树的 ASCII 表示。
-
-    Args:
-        ll_tree: LL(1) 解析树
-        lr_tree: LR 解析树
-
-    Returns:
-        str: 并排比较文本
-    """
+    """并排比较 LL 和 LR 解析树的 ASCII 表示。"""
     ll_lines = visualize_parse_tree(ll_tree, "ascii", "LL Parse Tree").split("\n")
     lr_lines = visualize_parse_tree(lr_tree, "ascii", "LR Parse Tree").split("\n")
 
@@ -384,8 +362,14 @@ if __name__ == '__main__':
     if sys.platform == 'win32':
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-    from .output_manager import resolve_output_path, tee_output
-    from ..lexer.lexer import Lexer
+    # 以下引入仅作运行模块测试使用，如果作为独立脚本可能会报 ImportError，
+    # 需要在项目根目录下通过 `python -m src.utils.parse_tree_visualizer` 运行。
+    try:
+        from .output_manager import resolve_output_path, tee_output
+        from ..lexer.lexer import Lexer
+    except ImportError:
+        print("提示：此脚本作为模块运行设计，如果在独立环境中执行测试将跳过后续 LL/LR 解析器的调用环节。")
+        sys.exit(0)
 
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r', encoding='utf-8') as f:
@@ -411,11 +395,9 @@ if __name__ == '__main__':
             print("\n=== LL ASCII Tree ===")
             print(visualize_parse_tree(ll_tree, "ascii", "LL(1) Parse Tree"))
 
-            print("\n=== LL DOT ===")
-            print(visualize_parse_tree(ll_tree, "dot"))
-
-            print("\n=== LL JSON ===")
-            print(visualize_parse_tree(ll_tree, "json"))
+            print("\n=== 渲染 LL 语法树 PNG ===")
+            # 使用新增加的 render_png 生成图片
+            ParseTreeVisualizer(ll_tree, "LL(1) Parse Tree").render_png("out_ll_parse_tree")
 
         # LR 解析
         from ..parser_lr.lr_parser import LRParser
@@ -429,6 +411,10 @@ if __name__ == '__main__':
         if lr_tree:
             print("\n=== LR ASCII Tree ===")
             print(visualize_parse_tree(lr_tree, "ascii", "LR Parse Tree"))
+            
+            print("\n=== 渲染 LR 语法树 PNG ===")
+            # 使用新增加的 render_png 生成图片
+            ParseTreeVisualizer(lr_tree, "LR Parse Tree").render_png("out_lr_parse_tree")
 
         if ll_tree and lr_tree:
             print("\n=== Comparison ===")
